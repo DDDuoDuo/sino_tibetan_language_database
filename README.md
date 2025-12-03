@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://www.eduhk.hk/re/modules/content/images/logo_eduhk.png" height="80" alt="EdUHK Logo" />
+<img src="img/EdUHK_logo.png" height="80" alt="EdUHK Logo" />
 
 # 汉藏语分化时间数据库
 ### Sino-Tibetan Divergence Time Database
