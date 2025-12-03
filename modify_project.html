@@ -805,16 +805,22 @@
             目标语言分化时间为 上限
             <span class="time-inline">
               <input type="number" id="projectTimeUpper" class="time-input" placeholder="年份">
-              <span id="projectTimeUpperEra" class="era-label"></span>
+              <select id="projectTimeUpperEra" class="time-select">
+                <option value="BC">BC</option>
+                <option value="AD">AD</option>
+              </select>
             </span>
             至 下限
             <span class="time-inline">
               <input type="number" id="projectTimeLower" class="time-input" placeholder="年份">
-              <span id="projectTimeLowerEra" class="era-label"></span>
+              <select id="projectTimeLowerEra" class="time-select">
+                <option value="BC">BC</option>
+                <option value="AD">AD</option>
+              </select>
             </span>
           </div>
 
-          <div class="hint-text">*时间范围由系统自动确定，上限取最近的上限时间，下限取最早的下限时间</div>
+          <div class="hint-text">*请自行确定上限与下限时间</div>
         </div>
 
         <div class="pagination-container">
@@ -1359,22 +1365,22 @@
       });
     }
 
-    function applyNormalizedProjectTime(suggest) {
-      const upEl  = document.getElementById('projectTimeUpper');
-      const upEEl = document.getElementById('projectTimeUpperEra');
-      const loEl  = document.getElementById('projectTimeLower');
-      const loEEl = document.getElementById('projectTimeLowerEra');
+    // function applyNormalizedProjectTime(suggest) {
+    //   const upEl  = document.getElementById('projectTimeUpper');
+    //   const upEEl = document.getElementById('projectTimeUpperEra');
+    //   const loEl  = document.getElementById('projectTimeLower');
+    //   const loEEl = document.getElementById('projectTimeLowerEra');
 
-      if (!suggest) return;
+    //   if (!suggest) return;
 
-      upEl.value  = suggest.upper;
-      upEEl.value = suggest.upperEra;
-      loEl.value  = suggest.lower;
-      loEEl.value = suggest.lowerEra;
+    //   upEl.value  = suggest.upper;
+    //   upEEl.value = suggest.upperEra;
+    //   loEl.value  = suggest.lower;
+    //   loEEl.value = suggest.lowerEra;
 
-      if (upEEl) upEEl.textContent = suggest.upperEra;
-      if (loEEl) loEEl.textContent = suggest.lowerEra;
-    }
+    //   if (upEEl) upEEl.textContent = suggest.upperEra;
+    //   if (loEEl) loEEl.textContent = suggest.lowerEra;
+    // }
 
     function renderWordsForCategory(selectedCategory) {
       const host = document.getElementById('wordSelectHost');
@@ -2912,12 +2918,12 @@
         document.querySelector(".form-buttons").style.display = "none";
         document.querySelector(".page-buttons").style.display = "flex";
 
-        if (pageEl && pageEl.querySelector('#projectTimeSection')) {
-          const suggest = computeSuggestedProjectTime(vocabData);
-          if (suggest) {
-              applyNormalizedProjectTime(suggest);
-          }
-        }
+        // if (pageEl && pageEl.querySelector('#projectTimeSection')) {
+        //   const suggest = computeSuggestedProjectTime(vocabData);
+        //   if (suggest) {
+        //       applyNormalizedProjectTime(suggest);
+        //   }
+        // }
         return;
       } else {
         if (currentPage === 3) {
