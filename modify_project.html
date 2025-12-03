@@ -1,7 +1,8 @@
 <html lang="zh">
 <head>
-  <link rel="stylesheet" href="auth.css">
-  <script src="auth.js"></script>
+  <link rel="stylesheet" href="css/global.css">
+  <script src="js/auth.js"></script>
+  <script src="js/warning.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <meta charset="UTF-8">
   <title>新建项目</title>
@@ -1207,12 +1208,14 @@
     const pageSize = 5;
     let totalVocabPages = 1;
 
+    let existingProject = null;
     let isTreeFileRemoved = false;
 
     let vocabData = [];
     let editingVocabIndex = null;
 
     let originalDraft = null;
+    window.currentProject = null;
 
     function updateRemoveButtons() {
       const removeBtns = document.querySelectorAll(".remove-language");
@@ -1221,7 +1224,7 @@
 
     function addLanguageInput(value = "", lng = "", lat = "") {
       if (languageContainer.children.length >= 6) {
-        alert("最多只能添加6种语言");
+        pop_up("最多只能添加6种语言");
         return;
       }
       const div = document.createElement("div");
@@ -1444,7 +1447,7 @@
       const remaining = Math.max(0, maxRows - base);
 
       if (currentCustom >= remaining) {
-        alert("最多只能添加6种语言");
+        pop_up("最多只能添加6种语言");
         return;
       }
 
@@ -1763,7 +1766,7 @@
       hint.textContent = `当前词汇数：${currentWords}；最多可再添加 ${MAX_COMPARE_ROWS - currentWords} 行`;
       
       if (!readonly && currentWords >= MAX_COMPARE_ROWS) {
-        alert('最多只能添加4个词汇');
+        pop_up('最多只能添加4个词汇');
         return;
       }
 
@@ -2153,6 +2156,78 @@
       Auth.init('#userStatus');
       Auth.bindProfileName('#userStatus');
 
+      async function fetchProjectFromBackend(projectId) {
+        if (!projectId) return null;
+        try {
+          const resp = await fetch(
+            `http://47.238.241.178:80/api/projects/${encodeURIComponent(projectId)}`
+          );
+          if (!resp.ok) {
+            if (resp.status !== 404) {
+              console.error("加载项目失败:", resp.status, await resp.text());
+            }
+            return null;
+          }
+
+          const data = await resp.json();
+          if (!data.success) {
+            console.error("后端返回失败:", data.error);
+            return null;
+          }
+
+          const p = data.project || {};
+
+          const timeRange = p.projectTimeRange || {};
+          const langNames = Array.isArray(p.languages) ? p.languages : [];
+          const langCoordsRaw = Array.isArray(p.languageCoords) ? p.languageCoords : [];
+          const vocabs = Array.isArray(p.vocabList) ? p.vocabList : [];
+          const treeFile = p.treeFile || null;
+
+          const normalized = {
+            id: p.id,
+            projectName: p.projectName || p.project_name || "",
+            projectDesc: p.projectDesc || p.project_desc || "",
+            references: p.references || p.references_text || "",
+            projectType: p.projectType || p.project_type || null,
+            createdAt: p.createdAt || p.created_at || "",
+            isPublic: !!(p.isPublic ?? p.is_public),
+
+            projectTimeRange: {
+              upper: timeRange.upper ?? "",
+              upperEra: timeRange.upperEra || "BC",
+              lower: timeRange.lower ?? "",
+              lowerEra: timeRange.lowerEra || "AD",
+            },
+
+            languages: [...langNames],
+            languageCoords: langCoordsRaw.map((l, idx) => ({
+              name: l.name || "",
+              lng: l.lng ?? l.longitude ?? null,
+              lat: l.lat ?? l.latitude ?? null,
+              sortOrder: l.sortOrder ?? idx,
+            })),
+
+            vocabList: vocabs,
+
+            treeFile: treeFile
+              ? {
+                  name: treeFile.name || treeFile.file_name || "treefile",
+                  type: treeFile.type || treeFile.mime_type || "image/png",
+                  content: treeFile.content || ""
+                }
+              : null,
+
+            authorId: p.authorId || p.author_id || null,
+            author: p.author || p.author_name || p.authorName || "未知用户",
+          };
+
+          return normalized;
+        } catch (err) {
+          console.error("调用后端接口出错（GET 项目）:", err);
+          return null;
+        }
+      }
+
       const currentUser = Auth.getCurrentUser();
 
       const urlParams = new URLSearchParams(window.location.search);
@@ -2161,73 +2236,113 @@
       document.querySelector(".page-buttons").style.display = "none";
 
       if (!projectId) {
-        const drafts = JSON.parse(localStorage.getItem("projectDrafts") || "[]");
-        const ids = drafts.map(d => d.id).filter(Boolean);
-        let maxNum = 0;
-        ids.forEach(id => {
-          const match = id.match(/proj_(\\d+)/);
-          if (match) {
-            const num = parseInt(match[1], 10);
-            if (num > maxNum) maxNum = num;
-          }
-        });
-        projectId = `proj_${maxNum + 1}`;
+        projectId = "proj_" + Date.now();
         sessionStorage.setItem("editingProjectId", projectId);
       }
 
-      document.getElementById("projectId").value = projectId;
+      // if (!projectId) {
+      //   const drafts = JSON.parse(localStorage.getItem("projectDrafts") || "[]");
+      //   const ids = drafts.map(d => d.id).filter(Boolean);
+      //   let maxNum = 0;
+      //   ids.forEach(id => {
+      //     const match = id.match(/proj_(\\d+)/);
+      //     if (match) {
+      //       const num = parseInt(match[1], 10);
+      //       if (num > maxNum) maxNum = num;
+      //     }
+      //   });
+      //   projectId = `proj_${maxNum + 1}`;
+      //   sessionStorage.setItem("editingProjectId", projectId);
+      // }
 
-      const drafts = JSON.parse(localStorage.getItem("projectDrafts") || "[]");
-      const existing = drafts.find(p => p.id === projectId);
+      document.getElementById("projectId").value = projectId;
 
       const treeFileInput = document.getElementById("treeFile");
       const viewTreeFile = document.getElementById("viewTreeFile");
       const removeTreeFile = document.getElementById("removeTreeFile");
       const treeFileActions = document.getElementById("treeFileActions");
 
-      if (existing) {
-        if (existing && currentUser && existing.authorId !== currentUser.id) {
+      (async () => {
+        const existing = await fetchProjectFromBackend(projectId);
+        window.currentProject = existing || null;
+
+        if (existing) {
+          if (currentUser && existing.authorId && existing.authorId !== currentUser.id) {
             window.location.href = "projects.html";
             return;
-        }
+          }
 
-        document.getElementById("infoPageTitle").textContent = "编辑项目";
-        document.getElementById("vocabPageTitle").textContent = "编辑项目";
-        document.getElementById("projectName").value = existing.projectName || "未命名项目";
-        document.getElementById("projectDesc").value = existing.projectDesc || "";
-        document.getElementById("references").value = existing.references || "";
-        originalDraft = JSON.stringify(existing);
+          document.getElementById("infoPageTitle").textContent = "编辑项目";
+          document.getElementById("vocabPageTitle").textContent = "编辑项目";
+          document.getElementById("projectName").value = existing.projectName || "未命名项目";
+          document.getElementById("projectDesc").value = existing.projectDesc || "";
+          document.getElementById("references").value = existing.references || "";
+          originalDraft = JSON.stringify(existing);
 
-        if (existing && existing.projectName) {
-          document.title = existing.projectName;
+          if (existing.projectName) {
+            document.title = existing.projectName;
+          } else {
+            document.title = "新建项目";
+          }
+
+          if (existing.projectType != null && existing.projectType !== "") {
+            const ptValue = String(existing.projectType);
+            const radio = document.querySelector(
+              `input[name="projectType"][value="${ptValue}"]`
+            );
+            if (radio) radio.checked = true;
+          }
+
+          if (existing.projectTimeRange) {
+            const t = existing.projectTimeRange;
+            document.getElementById("projectTimeUpper").value = t.upper || "";
+            document.getElementById("projectTimeUpperEra").value = t.upperEra || "BC";
+            document.getElementById("projectTimeLower").value = t.lower || "";
+            document.getElementById("projectTimeLowerEra").value = t.lowerEra || "AD";
+          }
+
+          if (existing.treeFile && existing.treeFile.content && !isTreeFileRemoved) {
+            let src = existing.treeFile.content;
+            if (!src.startsWith("data:")) {
+              const mime = existing.treeFile.type || "image/png";
+              src = `data:${mime};base64,${src}`;
+            }
+            window.currentTreeDataURL = src;
+            window.currentTreeFileName = existing.treeFile.name || "treefile";
+            treeFileActions.style.display = "flex";
+          } else {
+            treeFileActions.style.display = "none";
+          }
+
+          if (existing.languageCoords && Array.isArray(existing.languageCoords) && existing.languageCoords.length) {
+            existing.languageCoords.forEach(({ name, lng, lat }) =>
+              addLanguageInput(name || "", lng || "", lat || "")
+            );
+            const missingCount = 2 - existing.languageCoords.length;
+            for (let i = 0; i < missingCount; i++) addLanguageInput();
+          } else if (existing.languages && Array.isArray(existing.languages)) {
+            existing.languages.forEach(name => addLanguageInput(name));
+            const missingCount = 2 - existing.languages.length;
+            for (let i = 0; i < missingCount; i++) addLanguageInput();
+          } else {
+            addLanguageInput();
+            addLanguageInput();
+          }
+
+          vocabData = Array.isArray(existing.vocabList) ? existing.vocabList : [];
+          loadVocabList();
         } else {
+          document.getElementById("infoPageTitle").textContent = "新建项目";
+          document.getElementById("vocabPageTitle").textContent = "新建项目";
           document.title = "新建项目";
-        }
 
-        if (existing.projectType) {
-          const radio = document.querySelector(`input[name=\"projectType\"][value=\"${existing.projectType}\"]`);
-          if (radio) radio.checked = true;
+          addLanguageInput();
+          addLanguageInput();
+          vocabData = [];
+          loadVocabList();
+          treeFileActions.style.display = "none";
         }
-
-        if (existing?.treeFile && !isTreeFileRemoved) {
-          const content = existing.treeFile.content || "";
-          const base64Data = content.includes(",") ? content.split(",")[1] : content;
-          const mime = existing.treeFile.type || "application/octet-stream";
-          const blob = base64ToBlob(base64Data, mime);
-          const url = URL.createObjectURL(blob);
-
-          window.currentTreeDataURL = url;
-          window.currentTreeFileName = existing.treeFile.name || "treefile";
-          treeFileActions.style.display = "flex";
-        }
-
-        vocabData = existing.vocabList || [];
-        loadVocabList(vocabData);
-        const suggest = computeSuggestedProjectTime(vocabData);
-        if (suggest) {
-            applyNormalizedProjectTime(suggest);
-        }
-      }
+      })();
 
       window.languages = getLanguages();
       languageContainer = document.getElementById("language-container");
@@ -2243,51 +2358,123 @@
 
       window.languageContainer = languageContainer;
 
-      if (existing?.languageCoords && Array.isArray(existing.languageCoords) && existing.languageCoords.length) {
-        existing.languageCoords.forEach(({name, lng, lat}) => addLanguageInput(name || "", lng || "", lat || ""));
-        const missingCount = 2 - existing.languageCoords.length;
-        for (let i = 0; i < missingCount; i++) addLanguageInput();
-      } else if (existing?.languages && Array.isArray(existing.languages)) {
-        existing.languages.forEach(name => addLanguageInput(name));
-        const missingCount = 2 - existing.languages.length;
-        for (let i = 0; i < missingCount; i++) addLanguageInput();
-      } else {
-        addLanguageInput();
-        addLanguageInput();
-      }
+      // if (existing) {
+      //   if (existing && currentUser && existing.authorId !== currentUser.id) {
+      //       window.location.href = "projects.html";
+      //       return;
+      //   }
+
+      //   document.getElementById("infoPageTitle").textContent = "编辑项目";
+      //   document.getElementById("vocabPageTitle").textContent = "编辑项目";
+      //   document.getElementById("projectName").value = existing.projectName || "未命名项目";
+      //   document.getElementById("projectDesc").value = existing.projectDesc || "";
+      //   document.getElementById("references").value = existing.references || "";
+      //   originalDraft = JSON.stringify(existing);
+
+      //   if (existing && existing.projectName) {
+      //     document.title = existing.projectName;
+      //   } else {
+      //     document.title = "新建项目";
+      //   }
+
+        // if (existing.projectType) {
+        //   const radio = document.querySelector(`input[name=\"projectType\"][value=\"${existing.projectType}\"]`);
+        //   if (radio) radio.checked = true;
+        // }
+
+      //   if (existing?.treeFile && !isTreeFileRemoved) {
+      //     const content = existing.treeFile.content || "";
+      //     let src = content;
+
+      //     if (!src.startsWith("data:")) {
+      //       const mime = existing.treeFile.type || "image/png";
+      //       src = `data:${mime};base64,${content}`;
+      //     }
+
+      //     window.currentTreeDataURL = src;
+      //     window.currentTreeFileName = existing.treeFile.name || "treefile";
+
+      //     treeFileActions.style.display = "flex";
+      //   }
+
+      //   vocabData = existing.vocabList || [];
+      //   loadVocabList(vocabData);
+      //   const suggest = computeSuggestedProjectTime(vocabData);
+      //   if (suggest) {
+      //       applyNormalizedProjectTime(suggest);
+      //   }
+      // }
+
+      // if (existing?.languageCoords && Array.isArray(existing.languageCoords) && existing.languageCoords.length) {
+      //   existing.languageCoords.forEach(({name, lng, lat}) => addLanguageInput(name || "", lng || "", lat || ""));
+      //   const missingCount = 2 - existing.languageCoords.length;
+      //   for (let i = 0; i < missingCount; i++) addLanguageInput();
+      // } else if (existing?.languages && Array.isArray(existing.languages)) {
+      //   existing.languages.forEach(name => addLanguageInput(name));
+      //   const missingCount = 2 - existing.languages.length;
+      //   for (let i = 0; i < missingCount; i++) addLanguageInput();
+      // } else {
+      //   addLanguageInput();
+      //   addLanguageInput();
+      // }
 
       document.getElementById("addLanguageBtn").addEventListener("click", () => addLanguageInput());
       window.languages = getLanguages();
       renderTimeConclusion();
 
       document.getElementById("viewTreeFile").addEventListener("click", () => {
-        const dataURL =
+        let src =
           window.tempTreeFile?.dataURL ||
           window.currentTreeDataURL ||
-          existing?.treeFile?.content || null;
+          (existing?.treeFile?.content || "");
 
-        if (!dataURL) return;
-
-        if (dataURL.startsWith('data:')) {
-          const arr = dataURL.split(',');
-          const mimeMatch = arr[0].match(/data:(.*);base64/);
-          const mime = (mimeMatch && mimeMatch[1]) || 'application/octet-stream';
-          const blob = base64ToBlob(arr[1], mime);
-          const url = URL.createObjectURL(blob);
-          window.open(url, "_blank");
-        } else {
-          window.open(dataURL, "_blank");
+        if (!src) {
+          pop_up("没有可预览的树图文件");
+          console.error("viewTreeFile: empty src", {
+            temp: window.tempTreeFile,
+            existing,
+            currentTreeDataURL: window.currentTreeDataURL,
+          });
+          return;
         }
+
+        if (!src.startsWith("data:")) {
+          const mime =
+            window.tempTreeFile?.type ||
+            existing?.treeFile?.type ||
+            "image/png";
+          src = `data:${mime};base64,${src}`;
+        }
+
+        const win = window.open("", "_blank");
+        if (!win) {
+          pop_up("浏览器拦截了弹窗，请允许弹窗后再试", "r");
+          return;
+        }
+
+        const title =
+          window.currentTreeFileName ||
+          existing?.treeFile?.name ||
+          "treefile";
+
+        const escapedSrc = src
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;");
+
+        win.document.write(`
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>${title}</title>
+            </head>
+            <body style="margin:0;display:flex;align-items:center;justify-content:center;background:#202020;">
+              <img src="${escapedSrc}" style="max-width:100%;max-height:100vh;object-fit:contain;" />
+            </body>
+          </html>
+        `);
+        win.document.close();
       });
-
-      function base64ToBlob(base64, type) {
-        const binary = atob(base64);
-        const array = [];
-        for (let i = 0; i < binary.length; i++) {
-          array.push(binary.charCodeAt(i));
-        }
-        return new Blob([new Uint8Array(array)], { type: type });
-      }
 
       treeFileInput.addEventListener("change", () => {
         const file = treeFileInput.files[0];
@@ -2332,7 +2519,7 @@
           }
 
             loadVocabList();
-            alert("已删除词汇");
+            pop_up("已删除词汇");
         }
       };
 
@@ -2667,36 +2854,33 @@
         loadVocabList();
       });
 
-      function setupProfileMenu() {
-        const profileImg = document.getElementById("profileImg");
-        const dropdown = document.getElementById("dropdownMenu");
+      const profile = document.getElementById("profile");
+      const dropdown = document.getElementById("dropdownMenu");
+      if (profile && dropdown) {
+          profile.addEventListener('click', () => {
+          if (Auth.isLoggedIn()) {
+              dropdown.style.display = (dropdown.style.display === "none" || !dropdown.style.display)
+              ? "block" : "none";
+          } else {
+              Auth.showLogin();
+          }
+          });
 
-        if (!profileImg || !dropdown) return;
-
-        profileImg.onclick = () => {
-            if (sessionStorage.getItem("isLoggedIn") === "true") {
-              dropdown.style.display = (dropdown.style.display === "none") ? "block" : "none";
-            } else {
-              window.location.href = "language_map.html";
-            }
-        };
-
-        document.addEventListener("click", (e) => {
-            if (!profileImg.contains(e.target) && !dropdown.contains(e.target)) {
-              dropdown.style.display = "none";
-            }
-        });
+          document.addEventListener("click", (e) => {
+              if (!profile.contains(e.target) && !dropdown.contains(e.target)) {
+                  dropdown.style.display = "none";
+              }
+          });
       }
-
-      setupProfileMenu();
 
       const logoutBtn = document.getElementById("logoutBtn");
       if (logoutBtn) {
-        logoutBtn.addEventListener("click", () => {
-          sessionStorage.removeItem("isLoggedIn");
-          alert("已退出登录");
-          location.reload();
-        });
+          logoutBtn.addEventListener("click", () => {
+            Auth.logout();
+            setTimeout(() => {
+              window.location.href = "index.html?logout=true";
+            }, 100);
+          });
       }
 
       // window.addEventListener("beforeunload", (e) => {
@@ -2740,7 +2924,7 @@
           const category = document.querySelector('input[name="category"]:checked')?.value;
           const word = getSelectedWord();
           if (!category || !word) {
-            alert("请选择类别和词汇");
+            pop_up("请选择类别和词汇", "r");
             currentPage = 2;
             showPage(2);
             return;
@@ -2783,7 +2967,7 @@
       });
     });
 
-    window.saveDraft = function saveDraft() {
+    window.saveDraft = async function saveDraft() {
       const currentId = sessionStorage.getItem("editingProjectId");
       if (!currentId) return;
 
@@ -2791,8 +2975,7 @@
       const languages = getLanguages();
       const languageCoords = getLanguageCoords();
 
-      const drafts = JSON.parse(localStorage.getItem("projectDrafts") || "[]");
-      const existing = drafts.find(p => p.id === currentId);
+      const existing = window.currentProject || null;
 
       const projectName = document.getElementById("projectName").value.trim();
       const projectDesc = document.getElementById("projectDesc").value.trim();
@@ -2800,16 +2983,12 @@
       const projectType = document.querySelector('input[name="projectType"]:checked')?.value || null;
 
       const vocabListForTime = Array.isArray(window.vocabData) ? window.vocabData : [];
-      let computed = computeSuggestedProjectTime(vocabListForTime);
-
-      if (!computed) {
-        computed = normalizeTimeRange({
-          upper: document.getElementById('projectTimeUpper')?.value || '',
+      let computed = normalizeTimeRange({
+          upper: document.getElementById('projectTimeUpper')?.value || '4000',
           upperEra: document.getElementById('projectTimeUpperEra')?.value || 'BC',
-          lower: document.getElementById('projectTimeLower')?.value || '',
+          lower: document.getElementById('projectTimeLower')?.value || '5500',
           lowerEra: document.getElementById('projectTimeLowerEra')?.value || 'AD'
         });
-      }
 
       const projectTimeRange = computed ? {
         upper: computed.upper,
@@ -2818,24 +2997,25 @@
         lowerEra: computed.lowerEra
       } : { upper: '', upperEra: 'BC', lower: '', lowerEra: 'AD' };
 
-      let treeFileForSave = null;
+      let treeFileForBackend = null;
 
       if (!isTreeFileRemoved) {
         if (window.tempTreeFile?.dataURL) {
-          treeFileForSave = {
+          treeFileForBackend = {
             name: window.tempTreeFile.name,
             type: window.tempTreeFile.type,
             content: window.tempTreeFile.dataURL
           };
+
         } else if (existing?.treeFile) {
-          treeFileForSave = existing.treeFile;
+          treeFileForBackend = existing.treeFile || null;
         }
       }
 
-      const isPublic = existing?.isPublic;
+      const isPublic = existing?.isPublic ?? false;
 
-      function finalizeSave() {
-        const draft = {
+      async function finalizeSave() {
+        const baseFields = {
           id: currentId,
           projectName,
           projectDesc,
@@ -2844,7 +3024,6 @@
           languages,
           languageCoords,
           createdAt: existing?.createdAt || new Date().toLocaleString(),
-          treeFile: treeFileForSave,
           vocabList: vocabData,
           projectTimeRange,
           authorId: existing?.authorId
@@ -2860,23 +3039,58 @@
           isPublic,
         };
 
-        const index = drafts.findIndex(p => p.id === currentId);
-        if (index !== -1) {
-          drafts[index] = draft;
-        } else {
-          drafts.push(draft);
-        }
+        const draftForBackend = {
+          ...baseFields,
+          treeFile: treeFileForBackend
+        };
 
-        localStorage.setItem("projectDrafts", JSON.stringify(drafts));
-        if (currentPage <= 1) alert("草稿已保存！");
+        try {
+          const resp = await fetch("http://47.238.241.178:80/api/projects", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(draftForBackend)
+          });
+
+          if (!resp.ok) {
+            console.error("保存到后端失败", resp.status, await resp.text());
+            if (currentPage <= 1) {
+              pop_up("草稿已保存到浏览器，但同步到服务器失败，请稍后重试", "r");
+            }
+          } else {
+            let data = null;
+            try {
+              data = await resp.json();
+            } catch (e) {
+              console.warn("后端响应不是 JSON 或解析失败:", e);
+            }
+
+            if (data && data.project) {
+              const newProject = {
+                ...data.project,
+                treeFile: treeFileForBackend || data.project.treeFile || null
+              };
+              currentProject = newProject;
+              window.currentProject = newProject;
+            }
+
+            if (currentPage <= 1) {
+              pop_up("草稿已保存并同步到服务器", "g");
+            }
+          }
+        } catch (err) {
+          console.error("调用后端接口出错:", err);
+          if (currentPage <= 1) {
+            pop_up("草稿已保存到浏览器，但连接服务器时出错", "r");
+          }
+        }
 
         sessionStorage.removeItem("pendingAuthorId");
         sessionStorage.removeItem("pendingAuthorName");
       }
 
-      finalizeSave();
-      window.tempTreeFile = null;
-      window.currentTreeDataURL = null;
+      await finalizeSave();
+      // window.tempTreeFile = null;
+      // window.currentTreeDataURL = null;
     };
 
     window.loadVocabList = function loadVocabList(vocabList) {
@@ -3038,7 +3252,7 @@
       const word = getSelectedWord();
 
       if (!category || !word) {
-        alert("请选择类别和词汇");
+        pop_up("请选择类别和词汇");
         return;
       }
 

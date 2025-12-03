@@ -1,7 +1,8 @@
 <html lang="zh">
 <head>
-  <link rel="stylesheet" href="auth.css">
-  <script src="auth.js"></script>
+  <link rel="stylesheet" href="css/global.css">
+  <script src="js/auth.js"></script>
+  <script src="js/warning.js"></script>
   <meta charset="UTF-8">
   <title>项目管理</title>
   <style>
@@ -282,8 +283,7 @@
           <tr>
             <th>项目名称</th>
             <th>词汇数量</th>
-            <th>研究结果</th>
-            <th>地域</th>
+            <th>研究目标</th>
             <th>作者</th>
             <th>创建时间</th>
             <th>操作</th>
@@ -342,8 +342,9 @@
     if (logoutBtn) {
       logoutBtn.addEventListener("click", () => {
         Auth.logout();
-        alert("已退出登录");
-        location.reload();
+        setTimeout(() => {
+          window.location.href = "index.html?logout=true";
+        }, 100);
       });
     }
 
@@ -358,8 +359,7 @@
     });
   });
 
-  function loadProjectList() {
-    const drafts = JSON.parse(localStorage.getItem("projectDrafts") || "[]");
+  async function loadProjectList() {
     const tbody = document.querySelector("#projectTable tbody");
     const noProjects = document.getElementById("noProjects");
 
@@ -368,111 +368,178 @@
     const cu = JSON.parse(sessionStorage.getItem("currentUser") || "null");
     const myId = (cu && cu.id) || "anonymous";
 
-    let changed = false;
-    drafts.forEach(d => {
-      if (!d.authorId) { d.authorId = (cu && cu.id) || "anonymous"; changed = true; }
-      if (!d.author)   { d.author   = (cu && cu.username) || "未知用户"; changed = true; }
-    });
-    if (changed) localStorage.setItem("projectDrafts", JSON.stringify(drafts));
+    let projects = [];
+    try {
+      const resp = await fetch(
+        `http://47.238.241.178:80/api/projects?authorId=${encodeURIComponent(myId)}`
+      );
+      if (!resp.ok) {
+        console.error("加载项目失败:", resp.status, await resp.text());
+        noProjects.style.display = "block";
+        document.querySelector(".pagination-container").style.display = "none";
+        return;
+      }
 
-    const mine = drafts.filter(d => d.authorId === myId);
+      projects = await resp.json();
+    } catch (err) {
+      console.error("调用后端接口出错（GET /projects）:", err);
+      noProjects.style.display = "block";
+      document.querySelector(".pagination-container").style.display = "none";
+      return;
+    }
 
-    const totalPages = Math.ceil(mine.length / pageSize);
+    totalPages = Math.max(1, Math.ceil(projects.length / pageSize));
     const start = (currentPage - 1) * pageSize;
 
-    if (mine.length === 0) {
+    if (projects.length === 0) {
       noProjects.style.display = "block";
       document.querySelector(".pagination-container").style.display = "none";
       return;
     }
     noProjects.style.display = "none";
 
-    mine.slice(start, start + pageSize).forEach((draft, index) => {
+    projects.slice(start, start + pageSize).forEach((proj) => {
       const tr = document.createElement("tr");
-      const cu = JSON.parse(sessionStorage.getItem("currentUser") || "null");
-      const userName = (cu && cu.username) || sessionStorage.getItem("username") || "未知用户";
-      const authorName = draft.author || userName;
-      
+
+      const cuInner = JSON.parse(sessionStorage.getItem("currentUser") || "null");
+      const fallbackAuthor = (cuInner && cuInner.username) || "未知用户";
+
+      const projectName =
+        proj.project_name || proj.projectName || "未命名项目";
+      const authorName =
+        proj.author || proj.author_name || fallbackAuthor;
+
+      let createdAtText = "--";
+      const rawCreated = proj.created_at || proj.createdAt;
+      if (rawCreated) {
+        try {
+          const d = new Date(rawCreated);
+          if (!isNaN(d.getTime())) {
+            createdAtText = d.toLocaleString("zh-CN");
+          } else {
+            createdAtText = String(rawCreated);
+          }
+        } catch (e) {
+          createdAtText = String(rawCreated);
+        }
+      }
+
+      const isPublic = !!(proj.is_public ?? proj.isPublic);
+
+      const vocabCount = (proj.numVocab ?? proj.num_vocab ?? 0);
+
+      const projectTypeLabels = {
+        "1": "目标语言与其他语言的分化时间",
+        "2": "多个目标语言的分化时间",
+        "3": "目标语言的不同方言的分化时间"
+      };
+      const typeRaw = (proj.project_type ?? proj.projectType);
+      const typeKey = (typeRaw != null) ? String(typeRaw) : null;
+      const researchTarget = typeKey ? (projectTypeLabels[typeKey] || "--") : "--";
+
       tr.innerHTML = `
-        <td>${draft.projectName || "未命名项目"}</td>
-        <td>${(draft.vocabList)? draft.vocabList.length : 0}</td>
-        <td>--</td>
-        <td>--</td>
+        <td>${projectName}</td>
+        <td>${vocabCount}</td>
+        <td>${researchTarget}</td>
         <td>${authorName}</td>
-        <td>${draft.createdAt || "--"}</td>
+        <td>${createdAtText}</td>
         <td>
-          <button type="button" class="edit-button" data-id="${draft.id}">编辑</button>
-          <button type="button" class="delete-button" data-id="${draft.id}">删除</button>
+          <button type="button" class="edit-button" data-id="${proj.id}">编辑</button>
+          <button type="button" class="delete-button" data-id="${proj.id}">删除</button>
           <button type="button"
-          class="publish-button" data-id="${draft.id}" ${draft.isPublic ? 'style="display:none;"' : ''}>设为公开</button>
-          <button type="button" class="unpublish-button" data-id="${draft.id}" ${draft.isPublic ? '' : 'style="display:none;"'}>取消公开</button>
+            class="publish-button" data-id="${proj.id}" ${isPublic ? 'style="display:none;"' : ""}>设为公开</button>
+          <button type="button"
+            class="unpublish-button" data-id="${proj.id}" ${isPublic ? "" : 'style="display:none;"'}>取消公开</button>
         </td>
       `;
 
       tbody.appendChild(tr);
     });
 
-    document.querySelectorAll(".edit-button").forEach(button => {
-      button.addEventListener("click", e => {
+    document.querySelectorAll(".edit-button").forEach((button) => {
+      button.addEventListener("click", (e) => {
         const editId = e.target.getAttribute("data-id");
         sessionStorage.setItem("editingProjectId", editId);
         location.href = `modify_project.html?id=${editId}`;
       });
     });
 
-    document.querySelectorAll(".delete-button").forEach(button => {
-      button.addEventListener("click", e => {
+    document.querySelectorAll(".delete-button").forEach((button) => {
+      button.addEventListener("click", async (e) => {
         const deleteId = e.target.getAttribute("data-id");
-        if (confirm("确定要删除该项目吗？")) {
-          let drafts = JSON.parse(localStorage.getItem("projectDrafts") || "[]");
-          drafts = drafts.filter(p => p.id !== deleteId);
-          localStorage.setItem("projectDrafts", JSON.stringify(drafts));
+        if (!confirm("确定要删除该项目吗？")) return;
 
-          const totalAfterDelete = Math.ceil(drafts.length / pageSize);
-          if (currentPage > totalAfterDelete) {
-            currentPage = Math.max(1, totalAfterDelete);
+        try {
+          const resp = await fetch(
+            `http://47.238.241.178:80/api/projects/${encodeURIComponent(deleteId)}`,
+            { method: "DELETE" }
+          );
+          if (!resp.ok) {
+            console.error("删除失败:", resp.status, await resp.text());
+            pop_up("删除失败，请稍后重试", "r");
+            return;
           }
 
-          loadProjectList();
-          alert("已删除项目");
+          await loadProjectList();
+          pop_up("已删除项目", "g");
+        } catch (err) {
+          console.error("调用后端接口出错（DELETE /projects）:", err);
+          pop_up("删除时连接服务器出错，请稍后重试", "r");
         }
       });
     });
 
-    document.querySelectorAll(".publish-button").forEach(btn => {
-      btn.addEventListener("click", e => {
+    document.querySelectorAll(".publish-button").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
         const id = e.currentTarget.getAttribute("data-id");
-        const list = JSON.parse(localStorage.getItem("projectDrafts") || "[]");
-        const idx = list.findIndex(p => p.id === id);
-        if (idx === -1) return;
-
-        list[idx].isPublic = true;
-
-        localStorage.setItem("projectDrafts", JSON.stringify(list));
-        loadProjectList();
-        alert("项目已设为公开。");
+        try {
+          const resp = await fetch(
+            `http://47.238.241.178:80/api/projects/${encodeURIComponent(id)}/publish`,
+            { method: "POST" }
+          );
+          if (!resp.ok) {
+            console.error("设为公开失败:", resp.status, await resp.text());
+            pop_up("设为公开失败，请稍后重试", "r");
+            return;
+          }
+          await loadProjectList();
+          pop_up("项目已设为公开", "g");
+        } catch (err) {
+          console.error("调用后端接口出错（POST /publish）:", err);
+          pop_up("设为公开时连接服务器出错", "r");
+        }
       });
     });
 
-    document.querySelectorAll(".unpublish-button").forEach(btn => {
-      btn.addEventListener("click", e => {
+    document.querySelectorAll(".unpublish-button").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
         const id = e.currentTarget.getAttribute("data-id");
-        const list = JSON.parse(localStorage.getItem("projectDrafts") || "[]");
-        const idx = list.findIndex(p => p.id === id);
-        if (idx === -1) return;
-
-        list[idx].isPublic = false;
-
-        localStorage.setItem("projectDrafts", JSON.stringify(list));
-        loadProjectList();
-        alert("项目已取消公开。");
+        try {
+          const resp = await fetch(
+            `http://47.238.241.178:80/api/projects/${encodeURIComponent(id)}/unpublish`,
+            { method: "POST" }
+          );
+          if (!resp.ok) {
+            console.error("取消公开失败:", resp.status, await resp.text());
+            pop_up("取消公开失败，请稍后重试", "r");
+            return;
+          }
+          await loadProjectList();
+          pop_up("项目已取消公开", "g");
+        } catch (err) {
+          console.error("调用后端接口出错（POST /unpublish）:", err);
+          pop_up("取消公开时连接服务器出错", "r");
+        }
       });
     });
 
     document.getElementById("pageIndicator").textContent = `第 ${currentPage} 页`;
-    document.getElementById("prevPage").style.display = (currentPage > 1) ? "inline-block" : "none";
-    document.getElementById("nextPage").style.display = (currentPage < totalPages) ? "inline-block" : "none";
-    document.querySelector(".pagination-container").style.display = (totalPages > 1) ? "flex" : "none";
+    document.getElementById("prevPage").style.display =
+      currentPage > 1 ? "inline-block" : "none";
+    document.getElementById("nextPage").style.display =
+      currentPage < totalPages ? "inline-block" : "none";
+    document.querySelector(".pagination-container").style.display =
+      totalPages > 1 ? "flex" : "none";
   }
 
   document.getElementById("newProjectBtn").addEventListener("click", () => {

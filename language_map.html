@@ -1,7 +1,8 @@
 <html lang="zh">
 <head>
-  <link rel="stylesheet" href="auth.css">
-  <script src="auth.js"></script>
+  <link rel="stylesheet" href="css/global.css">
+  <script src="js/auth.js"></script>
+  <script src="js/warning.js"></script>
   <script src="https://webapi.amap.com/maps?v=2.0&key=0190baafdb829edc71b1c2b0cb9e3dd0"></script>
   <meta charset="UTF-8">
   <title>汉藏语分化时间数据库</title>
@@ -130,11 +131,11 @@
 
     .map-timeline-wrapper {
       display: flex;
-      align-items: flex-start;
+      align-items: stretch;
       justify-content: center;
-      gap: 16px;
       margin: 40px auto;
       width: 85%;
+      position: relative;
     }
 
     #map-placeholder {
@@ -146,6 +147,34 @@
 
     .timeline-wrapper {
       flex: 0 0 60%;
+    }
+
+        .map-timeline-splitter {
+      flex: 0 0 10px;
+      height: 500px;
+      cursor: col-resize;
+      background-color: #ddd;
+      border-radius: 6px;
+      margin: 0 8px;
+      align-self: stretch;
+      position: relative;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+    }
+
+    .map-timeline-splitter::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 4px;
+      height: 40px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.25);
+    }
+
+    .map-timeline-splitter:hover {
+      background-color: #ccc;
     }
 
     .timeline-container {
@@ -215,14 +244,13 @@
       position: absolute;
       height: 6px;
       border-radius: 4px;
-      background-color: rgba(0, 100, 200, 0.7);
       cursor: pointer;
-      transition: transform 0.2s, background-color 0.2s;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .project-line:hover {
+    .project-line:hover,
+    .project-line.active {
       transform: scaleY(1.8);
-      background-color: inherit;
       box-shadow: 0 0 6px rgba(0,0,0,0.4);
       z-index: 10;
     }
@@ -312,6 +340,9 @@
   
   <div class="map-timeline-wrapper">
     <div id="map-placeholder"></div>
+
+    <div id="mapTimelineSplitter" class="map-timeline-splitter"></div>
+
     <div class="timeline-wrapper">
       <div class="timeline-container" id="timeline-container">
         <div class="timeline-axis" aria-label="朝代时间轴（X轴）">
@@ -353,10 +384,9 @@
         <tr>
           <th>项目名称</th>
           <th>词汇数量</th>
-          <th>研究结果</th>
-          <th>地域</th>
+          <th>研究目标</th>
           <th>作者</th>
-          <th>创建时间</th>
+          <th>更新时间</th>
           <th>操作</th>
         </tr>
       </thead>
@@ -368,6 +398,8 @@
 </body>
 
 <script>
+  const PROJECTS_API_BASE = "http://47.238.241.178:80/api/projects";
+
   document.addEventListener("DOMContentLoaded", () => {
     Auth.init('#userStatus');
     Auth.bindProfileName('#userStatus');
@@ -395,8 +427,9 @@
     if (logoutBtn) {
         logoutBtn.addEventListener("click", () => {
         Auth.logout();
-        alert("已退出登录");
-        location.reload();
+        setTimeout(() => {
+          window.location.href = "language_map.html?logout=true";
+        }, 100);
         });
     }
 
@@ -411,28 +444,131 @@
       touchZoom: true
     });
 
-    let projectMarkers = [];
+    (function setupMapTimelineSplitter() {
+      const container = document.querySelector('.map-timeline-wrapper');
+      const mapBox = document.getElementById('map-placeholder');
+      const timelineBox = document.querySelector('.timeline-wrapper');
+      const splitter = document.getElementById('mapTimelineSplitter');
 
-    function loadMapMarkers() {
+      if (!container || !mapBox || !timelineBox || !splitter) return;
+
+      let isDragging = false;
+
+      const minPercent = 20;
+      const maxPercent = 60;
+
+      function onMouseMove(e) {
+        if (!isDragging) return;
+
+        const rect = container.getBoundingClientRect();
+        const splitterWidth = splitter.offsetWidth;
+
+        const splitterStyle = window.getComputedStyle(splitter);
+        const gap =
+          parseFloat(splitterStyle.marginLeft || "0") +
+          parseFloat(splitterStyle.marginRight || "0");
+
+        const available = rect.width - splitterWidth - gap;
+        if (available <= 0) return;
+
+        let offsetX = e.clientX - rect.left;
+        if (offsetX < 0) offsetX = 0;
+        if (offsetX > available) offsetX = available;
+
+        const minPx = (minPercent / 100) * available;
+        const maxPx = (maxPercent / 100) * available;
+
+        let mapWidth = offsetX;
+        if (mapWidth < minPx) mapWidth = minPx;
+        if (mapWidth > maxPx) mapWidth = maxPx;
+
+        const timelineWidth = available - mapWidth;
+
+        mapBox.style.flex = `0 0 ${mapWidth}px`;
+        timelineBox.style.flex = `0 0 ${timelineWidth}px`;
+
+        if (map && typeof map.resize === "function") {
+          map.resize();
+        }
+      }
+
+      function stopDragging() {
+        if (!isDragging) return;
+        isDragging = false;
+        document.body.style.cursor = "";
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', stopDragging);
+      }
+
+      splitter.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isDragging = true;
+        document.body.style.cursor = "col-resize";
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', stopDragging);
+      });
+    })();
+
+    let projectMarkers = [];
+    let publicProjectDetailsCache = null;
+
+    async function fetchPublicProjectDetails() {
+      if (publicProjectDetailsCache) return publicProjectDetailsCache;
+
+      try {
+        const resp = await fetch(`${PROJECTS_API_BASE}?publicOnly=1`);
+        const data = await resp.json();
+        const list = Array.isArray(data.projects) ? data.projects : (Array.isArray(data) ? data : []);
+        const pubList = list.filter(p => p.is_public === 1 || p.is_public === true || p.isPublic);
+
+        const details = [];
+        for (const base of pubList) {
+          try {
+            const detailResp = await fetch(
+              `${PROJECTS_API_BASE}/${encodeURIComponent(base.id)}`
+            );
+            if (!detailResp.ok) continue;
+
+            const detailData = await detailResp.json();
+            if (!detailData.success) continue;
+
+            const projDetail = detailData.project || {};
+            if (projDetail.isPublic) {
+              details.push(projDetail);
+            }
+          } catch (e) {
+            console.error("加载项目详情失败:", base.id, e);
+          }
+        }
+
+        publicProjectDetailsCache = details;
+        return publicProjectDetailsCache;
+      } catch (err) {
+        console.error("加载公开项目详情失败:", err);
+        publicProjectDetailsCache = [];
+        return publicProjectDetailsCache;
+      }
+    }
+
+    async function loadMapMarkers() {
       projectMarkers.forEach(m => map.remove(m));
       projectMarkers = [];
 
-      const projects = JSON.parse(localStorage.getItem("projectDrafts") || "[]")
-        .filter(p => p.isPublic && Array.isArray(p.languageCoords));
-
+      const projects = await fetchPublicProjectDetails();
       if (!projects.length) return;
 
       const bounds = new AMap.Bounds();
 
       projects.forEach(p => {
-        p.languageCoords.forEach(lang => {
+        const coords = Array.isArray(p.languageCoords) ? p.languageCoords : [];
+        coords.forEach(lang => {
           const lng = parseFloat(lang.lng);
           const lat = parseFloat(lang.lat);
           if (isNaN(lng) || isNaN(lat)) return;
 
           const marker = new AMap.Marker({
             position: [lng, lat],
-            title: `${p.projectName} - ${lang.name}`,
+            title: `${p.projectName || "未命名项目"} - ${lang.name}`,
             map: map
           });
 
@@ -443,13 +579,15 @@
         });
       });
 
-      map.setFitView();
+      if (projectMarkers.length) {
+        map.setFitView();
+      }
     }
 
-    function focusOnProject(projectId) {
-      const projects = JSON.parse(localStorage.getItem("projectDrafts") || "[]");
+    async function focusOnProject(projectId) {
+      const projects = await fetchPublicProjectDetails();
       const project = projects.find(p => p.id === projectId);
-      if (!project || !project.languageCoords) return;
+      if (!project || !Array.isArray(project.languageCoords)) return;
 
       const validPoints = project.languageCoords
         .map(l => [parseFloat(l.lng), parseFloat(l.lat)])
@@ -458,7 +596,10 @@
       if (validPoints.length) {
         const bounds = new AMap.Bounds();
         validPoints.forEach(pt => bounds.extend(pt));
-        map.setFitView(validPoints.map(pt => new AMap.Marker({ position: pt })));
+
+        map.setFitView(
+          validPoints.map(pt => new AMap.Marker({ position: pt }))
+        );
       }
 
       highlightProject(projectId);
@@ -466,35 +607,68 @@
 
     const tableBody = document.getElementById("project-table-body");
 
-    function renderPublicProjects() {
+    async function renderPublicProjects() {
       tableBody.innerHTML = "";
-      const drafts = JSON.parse(localStorage.getItem("projectDrafts") || "[]");
-      const pub = drafts.filter(d => d.isPublic);
 
-      if (pub.length === 0) {
+      let projects = [];
+      try {
+        const resp = await fetch(`${PROJECTS_API_BASE}?publicOnly=1`);
+        const data = await resp.json();
+
+        projects = Array.isArray(data.projects) ? data.projects : (Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("加载公开项目失败:", err);
+      }
+
+      const pub = projects.filter(p => p.is_public === 1 || p.is_public === true || p.isPublic);
+
+      if (!pub.length) {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="7" style="text-align:center;">暂无公开项目</td>`;
+        tr.innerHTML = `<td colspan="6" style="text-align:center;">暂无公开项目</td>`;
         tableBody.appendChild(tr);
         return;
       }
 
-      pub.forEach(d => {
-        const name = d.projectName || "未命名项目";
-        const wordCount = Array.isArray(d.vocabList) ? d.vocabList.length : 0;
-        const result = "--";
-        const region = "--";
-        const author = d.author || "未知作者";
-        const createdAt = d.createdAt || "--";
-        const action = `<button type="button" class="view-btn" data-id="${d.id}">查看</button>`;
+      pub.forEach(p => {
+        const name = p.project_name || p.projectName || "未命名项目";
+
+        const wordCount = (p.num_vocab ?? p.numVocab ?? 0);
+
+        const projectTypeLabels = {
+          "1": "目标语言与其他语言的分化时间",
+          "2": "多个目标语言的分化时间",
+          "3": "目标语言的不同方言的分化时间"
+        };
+        const typeRaw = p.project_type ?? p.projectType;
+        const typeKey = typeRaw != null ? String(typeRaw) : null;
+        const researchTarget = typeKey ? (projectTypeLabels[typeKey] || "--") : "--";
+
+        const author = p.author_username || "未知作者";
+
+        let updatedText = "--";
+        const rawUpdated = p.updated_at || p.updatedAt || p.lastPublicUpdate;
+        if (rawUpdated) {
+          try {
+            const d = new Date(rawUpdated);
+            if (!isNaN(d.getTime())) {
+              updatedText = d.toLocaleString("zh-CN");
+            } else {
+              updatedText = String(rawUpdated);
+            }
+          } catch (e) {
+            updatedText = String(rawUpdated);
+          }
+        }
+
+        const action = `<button type="button" class="view-btn" data-id="${p.id}">查看</button>`;
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${name}</td>
           <td>${wordCount}</td>
-          <td>${result}</td>
-          <td>${region}</td>
+          <td>${researchTarget}</td>
           <td>${author}</td>
-          <td>${createdAt}</td>
+          <td>${updatedText}</td>
           <td>${action}</td>
         `;
         tableBody.appendChild(tr);
@@ -530,6 +704,45 @@
       { name: "现代", start: 1949, end: 2100 }
     ];
 
+    function formatYearForTooltip(year) {
+      if (year == null) return "";
+      const n = Number(year);
+      if (!isFinite(n)) return "";
+      if (n < 0) {
+        return `${Math.abs(n)} BC`;
+      }
+      return `${n} AD`;
+    }
+
+    function attachDynastyLabelTooltips() {
+      const labels = document.querySelectorAll('.timeline-axis .dynasty');
+      const tooltip = document.getElementById('project-tooltip');
+      if (!labels.length || !tooltip) return;
+
+      labels.forEach((label, index) => {
+        const range = DYNASTY_RANGES[index];
+        if (!range) return;
+
+        const text = `<strong>${range.name}</strong><br>${formatYearForTooltip(range.start)} — ${formatYearForTooltip(range.end)}`;
+
+        label.addEventListener('mouseenter', (e) => {
+          tooltip.style.display = 'block';
+          tooltip.style.opacity = '1';
+          tooltip.innerHTML = text;
+        });
+
+        label.addEventListener('mouseleave', () => {
+          tooltip.style.display = 'none';
+          tooltip.style.opacity = '0';
+        });
+
+        label.addEventListener('mousemove', (e) => {
+          tooltip.style.left = e.pageX + 12 + 'px';
+          tooltip.style.top = e.pageY + 12 + 'px';
+        });
+      });
+    }
+
     function convertToNumber(year, era) {
       if (year == null || year === "") return null;
       const n = Number(year);
@@ -537,9 +750,8 @@
       return era === "BC" ? -Math.abs(n) : Math.abs(n);
     }
 
-    function getPublicProjectsWithTime() {
-      const drafts = JSON.parse(localStorage.getItem("projectDrafts") || "[]");
-      return drafts
+    function getProjectsWithTime(projects) {
+      return (projects || [])
         .filter(p => p.isPublic && p.projectTimeRange)
         .map(p => {
           const t = p.projectTimeRange || {};
@@ -581,12 +793,15 @@
       return { startDynastyIndex, endDynastyIndex };
     }
 
-    function drawProjectTimeline() {
+    async function drawProjectTimeline() {
       const grid = document.getElementById("timelineGrid");
       if (!grid) return;
 
       grid.innerHTML = "";
-      const projects = getPublicProjectsWithTime();
+
+      const allProjects = await fetchPublicProjectDetails();
+      const projects = getProjectsWithTime(allProjects);
+
       if (!projects.length) {
         grid.innerHTML = "<div style='text-align:center;color:#777;padding-top:80px;'>暂无带有时间信息的公开项目</div>";
         return;
@@ -596,7 +811,7 @@
 
       projects.forEach((p, idx) => {
         const raw = p.rawRange || {};
-        const timeText = `${raw.upper ?? ""}${raw.upperEra ?? ""} — ${raw.lower ?? ""}${raw.lowerEra ?? ""}`.trim();
+        const timeText = `${raw.upper ?? ""} ${raw.upperEra ?? ""} — ${raw.lower ?? ""} ${raw.lowerEra ?? ""}`.trim();
 
         const { startDynastyIndex, endDynastyIndex } = mapProjectToDynastyRange(p);
         const startPercent = (startDynastyIndex / DYNASTY_RANGES.length) * 100;
@@ -630,6 +845,11 @@
           tooltip.style.top = e.pageY + 12 + "px";
         });
 
+        line.addEventListener("click", (e) => {
+          e.stopPropagation();
+          focusOnProject(p.id);
+        });
+
         grid.appendChild(line);
         currentY += 20;
       });
@@ -637,16 +857,16 @@
 
     function highlightProject(projectId) {
       document.querySelectorAll('.project-line').forEach(line => {
-        if (line.dataset.projectId === projectId) {
-          line.style.boxShadow = `0 0 10px 2px ${getColor(line.dataset.projectID)}`;
-          line.style.transform = 'scaleY(2)';
-          line.style.zIndex = 20;
+        if (projectId && line.dataset.projectId === projectId) {
+          line.classList.add('active');
         } else {
-          line.style.boxShadow = '';
-          line.style.transform = '';
-          line.style.zIndex = '';
+          line.classList.remove('active');
         }
       });
+    }
+
+    function clearHighlightProject() {
+      highlightProject(null);
     }
 
     const COLOR_PALETTE = [
@@ -664,7 +884,30 @@
       return COLOR_PALETTE[index];
     }
 
+    const timelineGridEl = document.getElementById("timelineGrid");
+    if (timelineGridEl) {
+      timelineGridEl.addEventListener("click", (e) => {
+        if (!e.target.classList.contains("project-line")) {
+          clearHighlightProject();
+        }
+      });
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("login") === "true" && !Auth.isLoggedIn()) {
+        if (typeof Auth !== "undefined" && Auth.showLogin) {
+            setTimeout(() => Auth.showLogin(), 300);
+            pop_up("请先登录");
+        }
+    }
+    else if (urlParams.get("logout") === "true" && !Auth.isLoggedIn()) {
+        if (typeof Auth !== "undefined" && Auth.showLogin) {
+            pop_up("已退出登录");
+        }
+    }
+
     renderPublicProjects();
+    attachDynastyLabelTooltips();
     drawProjectTimeline();
     loadMapMarkers();
  });

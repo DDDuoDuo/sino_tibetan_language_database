@@ -6,12 +6,15 @@ function openAuthModal() {
 function closeAuthModal() {
     const m = document.getElementById('authModal');
     if (m) m.classList.add('hidden');
-}  
+}
 
 (function () {
+    const API_BASE = "http://47.238.241.178:80/api";
+
     const STORAGE_KEYS = {
       isLoggedIn: 'isLoggedIn',
-      username: 'username'
+      username: 'username',
+      currentUser: 'currentUser',
     };
 
     function setLogin(u) {
@@ -196,42 +199,55 @@ function closeAuthModal() {
             openAuthModal();
         },          
 
-        login() {
+        async login() {
             const email = document.getElementById("loginEmail").value.trim();
             const password = document.getElementById("loginPassword").value.trim();
             const error = document.getElementById("loginError");
-        
-            const users = JSON.parse(sessionStorage.getItem("users") || "{}");
-            const rec = users[email];
 
-            if (!rec || rec.password !== password) {
-                error.textContent = "邮箱或密码错误";
+            error.textContent = "";
+
+            if (!email || !password) {
+                error.textContent = "请填写邮箱和密码";
                 return;
             }
-            if (!rec.id) {
-                rec.id = (crypto.randomUUID && crypto.randomUUID()) || ("u_" + Date.now());
-                users[email] = rec;
-                sessionStorage.setItem("users", JSON.stringify(users));
+
+            try {
+                const resp = await fetch(`${API_BASE}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await resp.json();
+
+                if (!resp.ok || !data.success) {
+                    error.textContent = (data && data.message) || "登录失败";
+                    return;
+                }
+
+                const u = data.user || {};
+                const userObj = {
+                    id: u.id,
+                    email: u.email,
+                    username: u.username,
+                    title: u.title || "教授",
+                    workplace: u.workplace || "",
+                    created_at: u.created_at || null,
+                };
+
+                sessionStorage.setItem("currentUser", JSON.stringify(userObj));
+                sessionStorage.setItem("isLoggedIn", "true");
+                sessionStorage.setItem("username", userObj.username);
+                closeAuthModal();
+                this.bindProfileName('#userStatus');
+                pop_up("登录成功", "g");
+            } catch (err) {
+                console.error("登录请求出错:", err);
+                error.textContent = "登录失败，请检查网络连接";
             }
-            if (!rec.title) {
-                rec.title = "教授";
-                users[email] = rec;
-                sessionStorage.setItem("users", JSON.stringify(users));
-            }
-            if (!rec.workplace) {
-                rec.workplace = "";
-                users[email] = rec;
-                sessionStorage.setItem("users", JSON.stringify(users));
-            }
-        
-            sessionStorage.setItem("currentUser", JSON.stringify(rec));
-            sessionStorage.setItem("isLoggedIn", "true");
-            sessionStorage.setItem("username", rec.username);
-            closeAuthModal();
-            this.bindProfileName('#userStatus');
         },
         
-        register() {
+        async register() {
             const email = document.getElementById("registerEmail").value.trim();
             const username = document.getElementById("registerUsername").value.trim();
             const title = document.getElementById("registerTitle").value;
@@ -239,30 +255,53 @@ function closeAuthModal() {
             const password = document.getElementById("registerPassword").value.trim();
             const error = document.getElementById("registerError");
         
+            error.textContent = "";
+
             if (!email || !username || !password) {
-                error.textContent = "请填写所有字段";
-                return;
-            }
-        
-            const users = JSON.parse(sessionStorage.getItem("users") || "{}");
-            if (users[email]) {
-                error.textContent = "该邮箱已注册";
+                error.textContent = "请填写所有必填字段";
                 return;
             }
 
-            const userId = (crypto.randomUUID && crypto.randomUUID()) || ("u_" + Date.now());
+            try {
+                const resp = await fetch(`${API_BASE}/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, username, password, title, workplace })
+                });
 
-            users[email] = { id: userId, email, username, password, title, workplace };
-            sessionStorage.setItem("users", JSON.stringify(users));
-            sessionStorage.setItem("currentUser", JSON.stringify(users[email]));
-            sessionStorage.setItem("isLoggedIn", "true");
-            sessionStorage.setItem("username", username);
-            closeAuthModal();
-            this.bindProfileName('#userStatus');
+                const data = await resp.json();
+
+                if (!resp.ok || !data.success) {
+                    error.textContent = (data && data.message) || "注册失败";
+                    return;
+                }
+
+                const u = data.user || {};
+                const userObj = {
+                    id: u.id,
+                    email: u.email,
+                    username: u.username,
+                    title: u.title || "教授",
+                    workplace: u.workplace || "",
+                    created_at: u.created_at || null,
+                };
+
+                sessionStorage.setItem("currentUser", JSON.stringify(userObj));
+                sessionStorage.setItem("isLoggedIn", "true");
+                sessionStorage.setItem("username", userObj.username);
+                closeAuthModal();
+                this.bindProfileName('#userStatus');
+            } catch (err) {
+                console.error("注册请求出错:", err);
+                error.textContent = "注册失败，请检查网络连接";
+            }
         },
         
         logout() {
             sessionStorage.removeItem("currentUser");
+            sessionStorage.removeItem("isLoggedIn");
+            sessionStorage.removeItem("username");
+            notifyProfileChanged();
         },
         
         isLoggedIn() {

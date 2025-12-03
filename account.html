@@ -1,7 +1,8 @@
 <html lang="zh">
 <head>
-  <link rel="stylesheet" href="auth.css">
-  <script src="auth.js"></script>
+  <link rel="stylesheet" href="css/global.css">
+  <script src="js/auth.js"></script>
+  <script src="js/warning.js"></script>
   <meta charset="UTF-8">
   <title>汉藏语分化时间数据库</title>
   <style>
@@ -233,11 +234,12 @@
 </body>
 
 <script>
+    const AUTH_API_BASE = "http://47.238.241.178:80/api";
+
     function loadAccount() {
         const user = JSON.parse(sessionStorage.getItem("currentUser"));
         if (!user) {
-            alert("请先登录！");
-            window.location.href = "index.html";
+            window.location.href = "index.html?login=true";
             return;
         }
 
@@ -247,7 +249,7 @@
         document.getElementById("accWorkplace").value = user.workplace || "";
     }
 
-    function saveAccount() {
+    async function saveAccount() {
         const user = JSON.parse(sessionStorage.getItem("currentUser"));
         if (!user) return;
 
@@ -255,25 +257,52 @@
         const newTitle = document.getElementById("accTitle").value;
         const newWorkplace = document.getElementById("accWorkplace").value.trim();
 
-        const users = JSON.parse(sessionStorage.getItem("users") || "{}");
-        const email = user.email;
-        const rec = users[email];
-
-        if (rec) {
-            rec.username = newUsername;
-            rec.title = newTitle;
-            rec.workplace = newWorkplace;
-            users[email] = rec;
+        if (!newUsername) {
+            pop_up("用户名不能为空");
+            return;
         }
 
-        user.username = newUsername;
-        user.title = newTitle;
-        user.workplace = newWorkplace;
-        sessionStorage.setItem("currentUser", JSON.stringify(user));
-        sessionStorage.setItem("users", JSON.stringify(users));
+        try {
+            const resp = await fetch(`${AUTH_API_BASE}/profile`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: user.id,
+                    username: newUsername,
+                    title: newTitle,
+                    workplace: newWorkplace,
+                }),
+            });
 
-        alert("信息已保存！");
-        location.reload();
+            const data = await resp.json();
+
+            if (!resp.ok || !data.success) {
+                pop_up(data && data.message ? data.message : "保存失败", "r");
+                return;
+            }
+
+            const u = data.user || {};
+
+            const merged = {
+                ...user,
+                username: u.username ?? newUsername,
+                title: u.title ?? newTitle,
+                workplace: u.workplace ?? newWorkplace,
+                created_at: u.created_at ?? user.created_at,
+                email: u.email ?? user.email,
+                id: u.id ?? user.id,
+            };
+
+            sessionStorage.setItem("currentUser", JSON.stringify(merged));
+
+            const span = document.querySelector("#userStatus");
+            if (span) span.textContent = merged.username || "登录";
+
+            pop_up("信息已保存", "g");
+        } catch (err) {
+            console.error("保存账户信息出错:", err);
+            pop_up("保存失败，请检查网络连接", "r");
+        }
     }
 
     function goBack() {
@@ -316,8 +345,10 @@
         if (logoutBtn) {
             logoutBtn.addEventListener("click", () => {
                 Auth.logout();
-                alert("已退出登录");
-                location.reload();
+                pop_up("已退出登录");
+                setTimeout(() => {
+                    window.location.href = "index.html?login=true";
+                }, 100);
             });
         }
 
