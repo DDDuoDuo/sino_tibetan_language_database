@@ -1,8 +1,8 @@
 <html lang="zh">
 <head>
-  <link rel="stylesheet" href="css/global.css">
-  <script src="js/auth.js"></script>
-  <script src="js/warning.js"></script>
+  <link rel="stylesheet" href="css/global.css?v=20251214">
+  <script src="js/auth.js?v=20251214"></script>
+  <script src="js/warning.js?v=20251214"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <meta charset="UTF-8">
   <title>新建项目</title>
@@ -1365,23 +1365,6 @@
       });
     }
 
-    // function applyNormalizedProjectTime(suggest) {
-    //   const upEl  = document.getElementById('projectTimeUpper');
-    //   const upEEl = document.getElementById('projectTimeUpperEra');
-    //   const loEl  = document.getElementById('projectTimeLower');
-    //   const loEEl = document.getElementById('projectTimeLowerEra');
-
-    //   if (!suggest) return;
-
-    //   upEl.value  = suggest.upper;
-    //   upEEl.value = suggest.upperEra;
-    //   loEl.value  = suggest.lower;
-    //   loEEl.value = suggest.lowerEra;
-
-    //   if (upEEl) upEEl.textContent = suggest.upperEra;
-    //   if (loEEl) loEEl.textContent = suggest.lowerEra;
-    // }
-
     function renderWordsForCategory(selectedCategory) {
       const host = document.getElementById('wordSelectHost');
       if (!host) return;
@@ -2171,6 +2154,7 @@
           if (!resp.ok) {
             if (resp.status !== 404) {
               console.error("加载项目失败:", resp.status, await resp.text());
+              pop_up("加载项目失败，请检查网络连接");
             }
             return null;
           }
@@ -2178,6 +2162,7 @@
           const data = await resp.json();
           if (!data.success) {
             console.error("后端返回失败:", data.error);
+            pop_up("加载项目失败，请检查网络连接");
             return null;
           }
 
@@ -2187,7 +2172,7 @@
           const langNames = Array.isArray(p.languages) ? p.languages : [];
           const langCoordsRaw = Array.isArray(p.languageCoords) ? p.languageCoords : [];
           const vocabs = Array.isArray(p.vocabList) ? p.vocabList : [];
-          const treeFile = p.treeFile || null;
+          // const treeFile = p.treeFile || null;
 
           const normalized = {
             id: p.id,
@@ -2215,13 +2200,14 @@
 
             vocabList: vocabs,
 
-            treeFile: treeFile
-              ? {
-                  name: treeFile.name || treeFile.file_name || "treefile",
-                  type: treeFile.type || treeFile.mime_type || "image/png",
-                  content: treeFile.content || ""
-                }
-              : null,
+            hasTreeFile: !!(p.hasTreeFile ?? p.has_treefile ?? 0),
+            // treeFile: treeFile
+            //   ? {
+            //       name: treeFile.name || treeFile.file_name || "treefile",
+            //       type: treeFile.type || treeFile.mime_type || "image/png",
+            //       content: treeFile.content || ""
+            //     }
+            //   : null,
 
             authorId: p.authorId || p.author_id || null,
             author: p.author || p.author_name || p.authorName || "未知用户",
@@ -2307,14 +2293,7 @@
             document.getElementById("projectTimeLowerEra").value = t.lowerEra || "AD";
           }
 
-          if (existing.treeFile && existing.treeFile.content && !isTreeFileRemoved) {
-            let src = existing.treeFile.content;
-            if (!src.startsWith("data:")) {
-              const mime = existing.treeFile.type || "image/png";
-              src = `data:${mime};base64,${src}`;
-            }
-            window.currentTreeDataURL = src;
-            window.currentTreeFileName = existing.treeFile.name || "treefile";
+          if (existing.hasTreeFile && !isTreeFileRemoved) {
             treeFileActions.style.display = "flex";
           } else {
             treeFileActions.style.display = "none";
@@ -2364,120 +2343,41 @@
 
       window.languageContainer = languageContainer;
 
-      // if (existing) {
-      //   if (existing && currentUser && existing.authorId !== currentUser.id) {
-      //       window.location.href = "projects.html";
-      //       return;
-      //   }
-
-      //   document.getElementById("infoPageTitle").textContent = "编辑项目";
-      //   document.getElementById("vocabPageTitle").textContent = "编辑项目";
-      //   document.getElementById("projectName").value = existing.projectName || "未命名项目";
-      //   document.getElementById("projectDesc").value = existing.projectDesc || "";
-      //   document.getElementById("references").value = existing.references || "";
-      //   originalDraft = JSON.stringify(existing);
-
-      //   if (existing && existing.projectName) {
-      //     document.title = existing.projectName;
-      //   } else {
-      //     document.title = "新建项目";
-      //   }
-
-        // if (existing.projectType) {
-        //   const radio = document.querySelector(`input[name=\"projectType\"][value=\"${existing.projectType}\"]`);
-        //   if (radio) radio.checked = true;
-        // }
-
-      //   if (existing?.treeFile && !isTreeFileRemoved) {
-      //     const content = existing.treeFile.content || "";
-      //     let src = content;
-
-      //     if (!src.startsWith("data:")) {
-      //       const mime = existing.treeFile.type || "image/png";
-      //       src = `data:${mime};base64,${content}`;
-      //     }
-
-      //     window.currentTreeDataURL = src;
-      //     window.currentTreeFileName = existing.treeFile.name || "treefile";
-
-      //     treeFileActions.style.display = "flex";
-      //   }
-
-      //   vocabData = existing.vocabList || [];
-      //   loadVocabList(vocabData);
-      //   const suggest = computeSuggestedProjectTime(vocabData);
-      //   if (suggest) {
-      //       applyNormalizedProjectTime(suggest);
-      //   }
-      // }
-
-      // if (existing?.languageCoords && Array.isArray(existing.languageCoords) && existing.languageCoords.length) {
-      //   existing.languageCoords.forEach(({name, lng, lat}) => addLanguageInput(name || "", lng || "", lat || ""));
-      //   const missingCount = 2 - existing.languageCoords.length;
-      //   for (let i = 0; i < missingCount; i++) addLanguageInput();
-      // } else if (existing?.languages && Array.isArray(existing.languages)) {
-      //   existing.languages.forEach(name => addLanguageInput(name));
-      //   const missingCount = 2 - existing.languages.length;
-      //   for (let i = 0; i < missingCount; i++) addLanguageInput();
-      // } else {
-      //   addLanguageInput();
-      //   addLanguageInput();
-      // }
-
       document.getElementById("addLanguageBtn").addEventListener("click", () => addLanguageInput());
       window.languages = getLanguages();
       renderTimeConclusion();
 
-      document.getElementById("viewTreeFile").addEventListener("click", () => {
-        let src =
-          window.tempTreeFile?.dataURL ||
-          window.currentTreeDataURL ||
-          (existing?.treeFile?.content || "");
+      document.getElementById("viewTreeFile").addEventListener("click", async () => {
+        let src = window.tempTreeFile?.dataURL || window.currentTreeDataURL;
+        let title = window.currentTreeFileName || "treefile";
 
         if (!src) {
-          pop_up("没有可预览的树图文件");
-          console.error("viewTreeFile: empty src", {
-            temp: window.tempTreeFile,
-            existing,
-            currentTreeDataURL: window.currentTreeDataURL,
-          });
-          return;
+          const projectId = window.currentProject.id;
+          if (!projectId) { pop_up("找不到项目ID，无法查看", "r"); return; }
+          pop_up("正在从服务器获取树图文件...", "b");
+
+          const res = await fetch(`http://47.238.241.178:80/api/projects/${encodeURIComponent(projectId)}/treefile`);
+          const data = await res.json();
+          const tf = data?.treeFile || data;
+
+          if (!tf?.content) { pop_up("未找到树图文件内容", "r"); return; }
+
+          const mime = tf.type || "image/png";
+          src = tf.content.startsWith("data:") ? tf.content : `data:${mime};base64,${tf.content}`;
+          title = tf.name || title;
         }
 
-        if (!src.startsWith("data:")) {
-          const mime =
-            window.tempTreeFile?.type ||
-            existing?.treeFile?.type ||
-            "image/png";
-          src = `data:${mime};base64,${src}`;
-        }
+        if (!src) { pop_up("没有可预览的谱系树", "b"); return; }
 
         const win = window.open("", "_blank");
-        if (!win) {
-          pop_up("浏览器拦截了弹窗，请允许弹窗后再试", "r");
-          return;
-        }
+        if (!win) { pop_up("浏览器拦截了弹窗，请允许弹窗后再试", "r"); return; }
 
-        const title =
-          window.currentTreeFileName ||
-          existing?.treeFile?.name ||
-          "treefile";
-
-        const escapedSrc = src
-          .replace(/&/g, "&amp;")
-          .replace(/"/g, "&quot;")
-          .replace(/</g, "&lt;");
-
+        const escapedSrc = src.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
         win.document.write(`
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <title>${title}</title>
-            </head>
-            <body style="margin:0;display:flex;align-items:center;justify-content:center;background:#202020;">
-              <img src="${escapedSrc}" style="max-width:100%;max-height:100vh;object-fit:contain;" />
-            </body>
-          </html>
+          <html><head><meta charset="utf-8"><title>${title}</title></head>
+          <body style="margin:0;display:flex;align-items:center;justify-content:center;background:#202020;">
+            <img src="${escapedSrc}" style="max-width:100%;max-height:100vh;object-fit:contain;" />
+          </body></html>
         `);
         win.document.close();
       });
@@ -2781,6 +2681,7 @@
           timeRefsLoaded = true;
         }).catch(err => {
           console.error('加载参考表失败：', err);
+          pop_up("加载参考表失败，请检查网络连接");
         });
       }
 
@@ -2838,11 +2739,13 @@
 
       document.getElementById('exportVocabTableBtn')?.addEventListener('click', () => {
         const rows = buildVocabListCSV(vocabData);
+        pop_up("已导出 CSV 文件", "b");
         downloadCSV('分化信息.csv', rows);
       });
 
       document.getElementById('exportAllVocabsBtn')?.addEventListener('click', () => {
         const rows = buildAllVocabsEvidenceCSV(vocabData, (window.languages || []));
+        pop_up("已导出 CSV 文件", "b");
         downloadCSV('全部词汇_证据.csv', rows);
       });
 
@@ -2888,13 +2791,6 @@
             }, 100);
           });
       }
-
-      // window.addEventListener("beforeunload", (e) => {
-      //   if (isDraftModified()) {
-      //     e.preventDefault();
-      //     e.returnValue = "您有未保存的更改，确定要离开吗？";
-      //   }
-      // });
     });
 
     function showPage(pageNum) {
@@ -2917,13 +2813,6 @@
         currentPage = 1;
         document.querySelector(".form-buttons").style.display = "none";
         document.querySelector(".page-buttons").style.display = "flex";
-
-        // if (pageEl && pageEl.querySelector('#projectTimeSection')) {
-        //   const suggest = computeSuggestedProjectTime(vocabData);
-        //   if (suggest) {
-        //       applyNormalizedProjectTime(suggest);
-        //   }
-        // }
         return;
       } else {
         if (currentPage === 3) {
@@ -2988,7 +2877,6 @@
       const references = document.getElementById("references").value.trim();
       const projectType = document.querySelector('input[name="projectType"]:checked')?.value || null;
 
-      const vocabListForTime = Array.isArray(window.vocabData) ? window.vocabData : [];
       let computed = normalizeTimeRange({
           upper: document.getElementById('projectTimeUpper')?.value || '4000',
           upperEra: document.getElementById('projectTimeUpperEra')?.value || 'BC',
@@ -3003,19 +2891,23 @@
         lowerEra: computed.lowerEra
       } : { upper: '', upperEra: 'BC', lower: '', lowerEra: 'AD' };
 
-      let treeFileForBackend = null;
+      let treeFileForBackend = undefined;
+      let hasTreeFile = !!(existing?.hasTreeFile ?? 0);
 
-      if (!isTreeFileRemoved) {
-        if (window.tempTreeFile?.dataURL) {
-          treeFileForBackend = {
-            name: window.tempTreeFile.name,
-            type: window.tempTreeFile.type,
-            content: window.tempTreeFile.dataURL
-          };
-
-        } else if (existing?.treeFile) {
-          treeFileForBackend = existing.treeFile || null;
-        }
+      if (window.tempTreeFile?.dataURL) {
+        treeFileForBackend = {
+          name: window.tempTreeFile.name,
+          type: window.tempTreeFile.type,
+          content: window.tempTreeFile.dataURL
+        };
+        hasTreeFile = true;
+        isTreeFileRemoved = false;
+      } else if (isTreeFileRemoved) {
+        treeFileForBackend = null;
+        hasTreeFile = false;
+      } else if (hasTreeFile) {
+        treeFileForBackend = undefined;
+        hasTreeFile = true;
       }
 
       const isPublic = existing?.isPublic ?? false;
@@ -3043,12 +2935,14 @@
                     || sessionStorage.getItem("pendingAuthorName")
                     || "未知用户",
           isPublic,
+          hasTreeFile,
         };
 
-        const draftForBackend = {
-          ...baseFields,
-          treeFile: treeFileForBackend
-        };
+        const draftForBackend = { ...baseFields };
+
+        if (treeFileForBackend !== undefined) {
+          draftForBackend.treeFile = treeFileForBackend;
+        }
 
         try {
           const resp = await fetch("http://47.238.241.178:80/api/projects", {
@@ -3060,7 +2954,7 @@
           if (!resp.ok) {
             console.error("保存到后端失败", resp.status, await resp.text());
             if (currentPage <= 1) {
-              pop_up("草稿已保存到浏览器，但同步到服务器失败，请稍后重试", "r");
+              pop_up("草稿已保存到浏览器，但同步到服务器失败，请检查网络连接", "r");
             }
           } else {
             let data = null;
@@ -3068,12 +2962,17 @@
               data = await resp.json();
             } catch (e) {
               console.warn("后端响应不是 JSON 或解析失败:", e);
+              pop_up("草稿已保存到浏览器，但同步到服务器失败，请检查网络连接", "r");
             }
 
             if (data && data.project) {
               const newProject = {
                 ...data.project,
-                treeFile: treeFileForBackend || data.project.treeFile || null
+                hasTreeFile,
+                treeFile:
+                  treeFileForBackend === null ? null :
+                  treeFileForBackend === undefined ? (data.project.treeFile || null) :
+                  treeFileForBackend,
               };
               currentProject = newProject;
               window.currentProject = newProject;

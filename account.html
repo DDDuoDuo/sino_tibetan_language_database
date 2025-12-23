@@ -1,8 +1,8 @@
 <html lang="zh">
 <head>
-  <link rel="stylesheet" href="css/global.css">
-  <script src="js/auth.js"></script>
-  <script src="js/warning.js"></script>
+  <link rel="stylesheet" href="css/global.css?v=20251214">
+  <script src="js/auth.js?v=20251214"></script>
+  <script src="js/warning.js?v=20251214"></script>
   <meta charset="UTF-8">
   <title>汉藏语分化时间数据库</title>
   <style>
@@ -277,7 +277,7 @@
             const data = await resp.json();
 
             if (!resp.ok || !data.success) {
-                pop_up(data && data.message ? data.message : "保存失败", "r");
+                pop_up(data && data.message ? data.message : "保存失败，请检查网络连接", "r");
                 return;
             }
 

@@ -1,198 +1,219 @@
 (function () {
-    const MAX_TOASTS = 3;
-    const AUTO_DISMISS_MS = 4000;
-    const STORAGE_KEY = "warning_toasts";
-  
-    let stackEl = null;
-    let activeToasts = [];
+  const MAX_TOASTS = 3;
+  const AUTO_DISMISS_MS = 4000;
+  const STORAGE_KEY = "warning_toasts";
 
-    function normalizeType(t) {
-        const c = (t || "b").toString().trim().toLowerCase();
-        if (c === "r" || c === "g" || c === "b") return c;
-        return "b";
-    }
+  let stackEl = null;
+  let activeToasts = [];
 
-    function getToastVisualConfig(type) {
-        const t = normalizeType(type);
-        if (t === "r") {
-            return {
-            type: "r",
-            borderColor: "#dc2626",
-            icon: "✘",
-            iconColor: "#dc2626"
-            };
-        }
-        if (t === "g") {
-            return {
-            type: "g",
-            borderColor: "#16a34a",
-            icon: "✓",
-            iconColor: "#16a34a"
-            };
-        }
+  function normalizeType(t) {
+    const c = (t || "b").toString().trim().toLowerCase();
+    if (c === "r" || c === "g" || c === "b") return c;
+    return "b";
+  }
 
+  function getToastVisualConfig(type) {
+    const t = normalizeType(type);
+    if (t === "r") {
         return {
-            type: "b",
-            borderColor: "#2563eb",
-            icon: "i",
-            iconColor: "#2563eb"
+        type: "r",
+        borderColor: "#dc2626",
+        icon: "✘",
+        iconColor: "#dc2626"
+        };
+    }
+    if (t === "g") {
+        return {
+        type: "g",
+        borderColor: "#16a34a",
+        icon: "✓",
+        iconColor: "#16a34a"
         };
     }
 
-    function applyToastVisuals(toastEl, type) {
-        const cfg = getToastVisualConfig(type);
-        toastEl.dataset.toastType = cfg.type;
-        toastEl.style.borderColor = cfg.borderColor;
-    
-        const iconEl = toastEl.querySelector(".warning-toast__icon");
-        if (iconEl) {
-            iconEl.textContent = cfg.icon;
-            iconEl.style.color = cfg.iconColor;
-            iconEl.style.borderColor = cfg.iconColor;
-        }
-    }      
+    return {
+        type: "b",
+        borderColor: "#2563eb",
+        icon: "i",
+        iconColor: "#2563eb"
+    };
+  }
 
-    function loadStoredToasts() {
-        try {
-          const raw = sessionStorage.getItem(STORAGE_KEY);
-          if (!raw) return [];
-          const arr = JSON.parse(raw);
-          return Array.isArray(arr) ? arr : [];
-        } catch {
-          return [];
-        }
-    }
-    
-    function saveStoredToasts(list) {
-        try {
-          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(list || []));
-        } catch {
-        //   ignore
-        }
-    }
-    
-    function removeStoredToast(id) {
-        const list = loadStoredToasts().filter(t => t.id !== id);
-        saveStoredToasts(list);
-    }    
+  function applyToastVisuals(toastEl, type) {
+    const cfg = getToastVisualConfig(type);
+    toastEl.dataset.toastType = cfg.type;
+    toastEl.style.borderColor = cfg.borderColor;
 
-    function ensureStack() {
-      if (stackEl && document.body.contains(stackEl)) return stackEl;
-      stackEl = document.createElement("div");
-      stackEl.className = "warning-stack";
-      document.body.appendChild(stackEl);
-      return stackEl;
+    const iconEl = toastEl.querySelector(".warning-toast__icon");
+    if (iconEl) {
+        iconEl.textContent = cfg.icon;
+        iconEl.style.color = cfg.iconColor;
+        iconEl.style.borderColor = cfg.iconColor;
     }
+  }      
 
-    function dismissToast(toastEl) {
-      if (!toastEl || toastEl.classList.contains("leaving")) return;
+  function loadStoredToasts() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
+  }
   
-      toastEl.classList.add("leaving");
+  function saveStoredToasts(list) {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(list || []));
+    } catch {
+    //   ignore
+    }
+  }
+  
+  function removeStoredToast(id) {
+    const list = loadStoredToasts().filter(t => t.id !== id);
+    saveStoredToasts(list);
+  }    
 
-      const id = toastEl.dataset.toastId;
-      if (id) {
-        removeStoredToast(id);
+  function ensureStack() {
+    if (stackEl && document.contains(stackEl)) return stackEl;
+
+    const body = document.body || document.getElementsByTagName("body")[0];
+    if (!body) return null;
+
+    stackEl = document.getElementById("warning-toast-stack");
+    if (!stackEl) {
+      stackEl = document.createElement("div");
+      stackEl.id = "warning-toast-stack";
+      body.appendChild(stackEl);
+    }
+    return stackEl;
+  }
+
+  function dismissToast(toastEl) {
+    if (!toastEl || toastEl.classList.contains("leaving")) return;
+
+    toastEl.classList.add("leaving");
+
+    const id = toastEl.dataset.toastId;
+    if (id) {
+      removeStoredToast(id);
+    }
+
+    toastEl.addEventListener(
+      "animationend",
+      () => {
+        if (toastEl.parentNode) {
+          toastEl.parentNode.removeChild(toastEl);
+        }
+        activeToasts = activeToasts.filter((t) => t !== toastEl);
+      },
+      { once: true }
+    );
+  }
+
+  function pop_up(message, type) {
+      if (!message) return;
+  
+      const stack = ensureStack();
+      if (!stack) return;
+  
+      const id = "toast_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+      const now = Date.now();
+      const expiresAt = now + AUTO_DISMISS_MS;
+
+      const toastType = normalizeType(type);
+  
+      const list = loadStoredToasts().filter(t => t.expiresAt > now);
+      list.push({ id, message: String(message), type: toastType, expiresAt });
+      saveStoredToasts(list);
+
+      if (activeToasts.length >= MAX_TOASTS) {
+          const oldest = activeToasts[0];
+          dismissToast(oldest);
+          activeToasts = activeToasts.slice(1);
       }
 
-      toastEl.addEventListener(
-        "animationend",
-        () => {
-          if (toastEl.parentNode) {
-            toastEl.parentNode.removeChild(toastEl);
-          }
-          activeToasts = activeToasts.filter((t) => t !== toastEl);
-        },
-        { once: true }
-      );
-    }
+      const toast = document.createElement("div");
+      toast.className = "warning-toast";
+      toast.dataset.toastId = id;
+  
+      toast.innerHTML = `
+          <div class="warning-toast__icon">i</div>
+          <div class="warning-toast__text"></div>
+      `;
+  
+      const textEl = toast.querySelector(".warning-toast__text");
+      textEl.textContent = message;
 
-    function pop_up(message, type) {
-        if (!message) return;
-    
+      applyToastVisuals(toast, toastType);
+  
+      toast.addEventListener("click", () => {
+          dismissToast(toast);
+      });
+  
+      stack.appendChild(toast);
+      activeToasts.push(toast);
+
+      setTimeout(() => {
+          dismissToast(toast);
+      }, AUTO_DISMISS_MS);
+  }    
+
+  function restoreToasts() {
+      const now = Date.now();
+      const list = loadStoredToasts().filter(t => t.expiresAt > now);
+      saveStoredToasts(list);
+
+      list.forEach(t => {
+        const remaining = t.expiresAt - now;
+        if (remaining <= 0) return;
+
         const stack = ensureStack();
-    
-        const id = "toast_" + Date.now() + "_" + Math.random().toString(16).slice(2);
-        const now = Date.now();
-        const expiresAt = now + AUTO_DISMISS_MS;
-
-        const toastType = normalizeType(type);
-    
-        const list = loadStoredToasts().filter(t => t.expiresAt > now);
-        list.push({ id, message: String(message), type: toastType, expiresAt });
-        saveStoredToasts(list);
-
-        if (activeToasts.length >= MAX_TOASTS) {
-            const oldest = activeToasts[0];
-            dismissToast(oldest);
-            activeToasts = activeToasts.slice(1);
-        }
+        if (!stack) return;
 
         const toast = document.createElement("div");
         toast.className = "warning-toast";
-        toast.dataset.toastId = id;
-    
-        toast.innerHTML = `
-            <div class="warning-toast__icon">i</div>
-            <div class="warning-toast__text"></div>
-        `;
-    
-        const textEl = toast.querySelector(".warning-toast__text");
-        textEl.textContent = message;
+        toast.dataset.toastId = t.id;
 
+        toast.innerHTML = `
+          <div class="warning-toast__icon">i</div>
+          <div class="warning-toast__text"></div>
+        `;
+
+        toast.querySelector(".warning-toast__text").textContent = t.message;
+
+        const toastType = normalizeType(t.type);
         applyToastVisuals(toast, toastType);
-    
+
         toast.addEventListener("click", () => {
-            dismissToast(toast);
+          dismissToast(toast);
         });
-    
+
         stack.appendChild(toast);
         activeToasts.push(toast);
 
         setTimeout(() => {
-            dismissToast(toast);
-        }, AUTO_DISMISS_MS);
-    }    
-  
-    function restoreToasts() {
-        const now = Date.now();
-        const list = loadStoredToasts().filter(t => t.expiresAt > now);
-        saveStoredToasts(list);
+          dismissToast(toast);
+        }, remaining);
+      });
+  }
 
-        list.forEach(t => {
-          const remaining = t.expiresAt - now;
-          if (remaining <= 0) return;
+  window.pop_up = pop_up;
+  window.Warning = { pop_up };
 
-          const stack = ensureStack();
-
-          const toast = document.createElement("div");
-          toast.className = "warning-toast";
-          toast.dataset.toastId = t.id;
-
-          toast.innerHTML = `
-            <div class="warning-toast__icon">i</div>
-            <div class="warning-toast__text"></div>
-          `;
-
-          toast.querySelector(".warning-toast__text").textContent = t.message;
-
-          const toastType = normalizeType(t.type);
-          applyToastVisuals(toast, toastType);
-
-          toast.addEventListener("click", () => {
-            dismissToast(toast);
-          });
-
-          stack.appendChild(toast);
-          activeToasts.push(toast);
-
-          setTimeout(() => {
-            dismissToast(toast);
-          }, remaining);
-        });
+  function bootWarningToasts() {
+    if (!document.body) {
+      requestAnimationFrame(bootWarningToasts);
+      return;
     }
-
-    window.pop_up = pop_up;
-    window.Warning = { pop_up };
-
     restoreToasts();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootWarningToasts);
+  } else {
+    bootWarningToasts();
+  }
 })();

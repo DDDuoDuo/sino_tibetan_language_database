@@ -1,8 +1,8 @@
 <html lang="zh">
 <head>
-  <link rel="stylesheet" href="css/global.css">
-  <script src="js/auth.js"></script>
-  <script src="js/warning.js"></script>
+  <link rel="stylesheet" href="css/global.css?v=20251214">
+  <script src="js/auth.js?v=20251214"></script>
+  <script src="js/warning.js?v=20251214"></script>
   <meta charset="UTF-8">
   <title>项目管理</title>
   <style>
@@ -60,64 +60,64 @@
     }
 
     .profile {
-        display: flex;
-        align-items: center;
-        margin-right: 75px;
-        gap: 16px;
-        cursor: pointer;
+      display: flex;
+      align-items: center;
+      margin-right: 75px;
+      gap: 16px;
+      cursor: pointer;
     }
     
     .profile img {
-        height: 40px;
-        border-radius: 50%;
-        cursor: pointer;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
     }
 
     .profile-name {
-        color: gray;
-        font-size: 16px;
-        user-select: none;
+      color: gray;
+      font-size: 16px;
+      user-select: none;
     }
 
     .dropdown-menu {
-        position: absolute;
-        top: 70px;
-        right: 190px;
-        background-color: white;
-        border: 1px solid #ccc;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 5px;
-        width: 140px;
-        z-index: 9999;
-        overflow: hidden;
+      position: absolute;
+      top: 70px;
+      right: 190px;
+      background-color: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+      width: 140px;
+      z-index: 9999;
+      overflow: hidden;
     }
 
     .dropdown-menu a {
-        display: block;
-        padding: 10px 16px;
-        text-decoration: none;
-        color: #333;
-        font-size: 14px;
+      display: block;
+      padding: 10px 16px;
+      text-decoration: none;
+      color: #333;
+      font-size: 14px;
     }
 
     .dropdown-menu a:hover {
-        background-color: #f0f0f0;
+      background-color: #f0f0f0;
     }
 
     .dropdown-menu button.dropdown-link {
-        display: block;
-        width: 100%;
-        padding: 10px 16px;
-        border: none;
-        background: none;
-        text-align: left;
-        font-size: 14px;
-        color: #333;
-        cursor: pointer;
+      display: block;
+      width: 100%;
+      padding: 10px 16px;
+      border: none;
+      background: none;
+      text-align: left;
+      font-size: 14px;
+      color: #333;
+      cursor: pointer;
     }
 
     .dropdown-menu button.dropdown-link:hover {
-        background-color: #f0f0f0;
+      background-color: #f0f0f0;
     }
 
     .welcome-container {
@@ -375,14 +375,17 @@
       );
       if (!resp.ok) {
         console.error("加载项目失败:", resp.status, await resp.text());
+        pop_up("加载项目失败，请检查网络连接", "r");
         noProjects.style.display = "block";
         document.querySelector(".pagination-container").style.display = "none";
         return;
       }
 
-      projects = await resp.json();
+      const data = await resp.json();
+      projects = data.projects || [];
     } catch (err) {
       console.error("调用后端接口出错（GET /projects）:", err);
+      pop_up("加载项目失败，请检查网络连接", "r");
       noProjects.style.display = "block";
       document.querySelector(".pagination-container").style.display = "none";
       return;
@@ -476,7 +479,7 @@
           );
           if (!resp.ok) {
             console.error("删除失败:", resp.status, await resp.text());
-            pop_up("删除失败，请稍后重试", "r");
+            pop_up("删除失败，请检查网络连接", "r");
             return;
           }
 
@@ -484,7 +487,7 @@
           pop_up("已删除项目", "g");
         } catch (err) {
           console.error("调用后端接口出错（DELETE /projects）:", err);
-          pop_up("删除时连接服务器出错，请稍后重试", "r");
+          pop_up("删除时连接服务器出错，请检查网络连接", "r");
         }
       });
     });
@@ -499,7 +502,7 @@
           );
           if (!resp.ok) {
             console.error("设为公开失败:", resp.status, await resp.text());
-            pop_up("设为公开失败，请稍后重试", "r");
+            pop_up("设为公开失败，请检查网络连接", "r");
             return;
           }
           await loadProjectList();
@@ -521,7 +524,7 @@
           );
           if (!resp.ok) {
             console.error("取消公开失败:", resp.status, await resp.text());
-            pop_up("取消公开失败，请稍后重试", "r");
+            pop_up("取消公开失败，请检查网络连接", "r");
             return;
           }
           await loadProjectList();

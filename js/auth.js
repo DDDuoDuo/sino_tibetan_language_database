@@ -12,30 +12,45 @@ function closeAuthModal() {
     const API_BASE = "http://47.238.241.178:80/api";
 
     const STORAGE_KEYS = {
-      isLoggedIn: 'isLoggedIn',
-      username: 'username',
-      currentUser: 'currentUser',
+        isLoggedIn: 'isLoggedIn',
+        username: 'username',
+        currentUser: 'currentUser',
     };
 
-    function setLogin(u) {
-      sessionStorage.setItem(STORAGE_KEYS.isLoggedIn, 'true');
-      sessionStorage.setItem(STORAGE_KEYS.username, u || '');
-      notifyProfileChanged();
+    function setLogin(u, userObj = null) {
+        localStorage.setItem(STORAGE_KEYS.isLoggedIn, 'true');
+        localStorage.setItem(STORAGE_KEYS.username, u || '');
+        if (userObj) localStorage.setItem(STORAGE_KEYS.currentUser, JSON.stringify(userObj));
+
+        sessionStorage.setItem(STORAGE_KEYS.isLoggedIn, 'true');
+        sessionStorage.setItem(STORAGE_KEYS.username, u || '');
+        if (userObj) sessionStorage.setItem(STORAGE_KEYS.currentUser, JSON.stringify(userObj));
+
+        notifyProfileChanged();
     }
 
+
     function clearLogin() {
-      sessionStorage.removeItem(STORAGE_KEYS.isLoggedIn);
-      sessionStorage.removeItem(STORAGE_KEYS.username);
-      sessionStorage.removeItem(STORAGE_KEYS.currentUser);
-      notifyProfileChanged();
+        localStorage.removeItem(STORAGE_KEYS.isLoggedIn);
+        localStorage.removeItem(STORAGE_KEYS.username);
+        localStorage.removeItem(STORAGE_KEYS.currentUser);
+
+        sessionStorage.removeItem(STORAGE_KEYS.isLoggedIn);
+        sessionStorage.removeItem(STORAGE_KEYS.username);
+        sessionStorage.removeItem(STORAGE_KEYS.currentUser);
+
+        notifyProfileChanged();
     }
 
     function isLoggedIn() {
-      return sessionStorage.getItem(STORAGE_KEYS.isLoggedIn) === 'true';
+        return localStorage.getItem(STORAGE_KEYS.isLoggedIn) === 'true'
+            || sessionStorage.getItem(STORAGE_KEYS.isLoggedIn) === 'true';
     }
 
     function getUsername() {
-      return sessionStorage.getItem(STORAGE_KEYS.username) || '';
+        return localStorage.getItem(STORAGE_KEYS.username)
+            || sessionStorage.getItem(STORAGE_KEYS.username)
+            || '';
     }
 
     function openModal() {
@@ -56,6 +71,37 @@ function closeAuthModal() {
         init() {
           this.loadAuthUI();
           this.bindEvents();
+          this.restoreSession();
+        },
+
+        async restoreSession() {
+            const cached = localStorage.getItem(STORAGE_KEYS.currentUser);
+            if (cached) {
+                try {
+                const u = JSON.parse(cached);
+                setLogin(u.username, u);
+                } catch (e) {}
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE}/me`, { credentials: "include" });
+                if (!resp.ok) return;
+                const data = await resp.json();
+                if (data && data.success && data.user) {
+                const u = data.user;
+                const userObj = {
+                    id: u.id,
+                    email: u.email,
+                    username: u.username,
+                    title: u.title || "教授",
+                    workplace: u.workplace || "",
+                    created_at: u.created_at || null,
+                };
+                setLogin(userObj.username, userObj);
+                }
+            } catch (e) {
+                console.warn("restore session failed:", e);
+            }
         },
       
         loadAuthUI() {
@@ -215,6 +261,7 @@ function closeAuthModal() {
                 const resp = await fetch(`${API_BASE}/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
+                    credentials: "include",
                     body: JSON.stringify({ email, password })
                 });
 
@@ -235,9 +282,7 @@ function closeAuthModal() {
                     created_at: u.created_at || null,
                 };
 
-                sessionStorage.setItem("currentUser", JSON.stringify(userObj));
-                sessionStorage.setItem("isLoggedIn", "true");
-                sessionStorage.setItem("username", userObj.username);
+                setLogin(userObj.username, userObj);
                 closeAuthModal();
                 this.bindProfileName('#userStatus');
                 pop_up("登录成功", "g");
@@ -266,6 +311,7 @@ function closeAuthModal() {
                 const resp = await fetch(`${API_BASE}/register`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
+                    credentials: "include",
                     body: JSON.stringify({ email, username, password, title, workplace })
                 });
 
@@ -286,9 +332,7 @@ function closeAuthModal() {
                     created_at: u.created_at || null,
                 };
 
-                sessionStorage.setItem("currentUser", JSON.stringify(userObj));
-                sessionStorage.setItem("isLoggedIn", "true");
-                sessionStorage.setItem("username", userObj.username);
+                setLogin(userObj.username, userObj);
                 closeAuthModal();
                 this.bindProfileName('#userStatus');
             } catch (err) {
@@ -297,19 +341,27 @@ function closeAuthModal() {
             }
         },
         
-        logout() {
-            sessionStorage.removeItem("currentUser");
-            sessionStorage.removeItem("isLoggedIn");
-            sessionStorage.removeItem("username");
-            notifyProfileChanged();
+        async logout() {
+            try {
+                await fetch(`${API_BASE}/logout`, {
+                method: "POST",
+                credentials: "include",
+                });
+            } catch (e) {
+                console.warn("logout request failed:", e);
+            }
+            clearLogin();
         },
         
         isLoggedIn() {
-            return !!sessionStorage.getItem("currentUser");
+            return isLoggedIn();
         },
         
         getCurrentUser() {
-            return JSON.parse(sessionStorage.getItem("currentUser"));
+            const raw =
+                localStorage.getItem(STORAGE_KEYS.currentUser) ||
+                sessionStorage.getItem(STORAGE_KEYS.currentUser);
+            return raw ? JSON.parse(raw) : null;
         },
         
         bindProfileName(selector) {

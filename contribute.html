@@ -1,8 +1,8 @@
 <html lang="zh">
 <head>
-  <link rel="stylesheet" href="css/global.css">
-  <script src="js/auth.js"></script>
-  <script src="js/warning.js"></script>
+  <link rel="stylesheet" href="css/global.css?v=20251214">
+  <script src="js/auth.js?v=20251214"></script>
+  <script src="js/warning.js?v=20251214"></script>
   <meta charset="UTF-8">
   <title>汉藏语分化时间数据库</title>
   <style>
@@ -119,6 +119,94 @@
     .dropdown-menu button.dropdown-link:hover {
         background-color: #f0f0f0;
     }
+
+    .project-list-header {
+        max-width: 1200px;
+        margin: 40px auto 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .project-list-title {
+        font-size: 22px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .project-list-header .project-list-title {
+        margin: 0;
+    }
+
+    .contributor-search {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 999px;
+        background: #fff;
+        min-width: 190px;
+    }
+
+    .contributor-search input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 14px;
+    }
+
+    .contributor-search button {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        color: #666;
+    }
+
+    .project-list-container {
+        max-width: 1200px;
+        margin: 0 auto 60px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        overflow-x: auto;
+    }
+
+    .project-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .project-table th,
+    .project-table td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .project-table th {
+        background-color: #eee;
+        font-weight: bold;
+    }
+
+    .pagination-container {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        margin-top: 16px;
+        gap: 10px;
+    }
+
+    .page-btn {
+        padding: 4px 12px;
+        font-size: 16px;
+        cursor: pointer;
+    }
   </style>
 </head>
 
@@ -150,56 +238,199 @@
       </div>
     </header>
 
+    <div class="project-list-header">
+        <div class="project-list-title">贡献者列表</div>
+
+        <div class="contributor-search">
+            <input id="contributorSearchInput"
+                type="text"
+                placeholder="搜索用户名 / 工作单位…"
+                autocomplete="off">
+            <button id="contributorSearchClear" type="button" title="清空">×</button>
+        </div>
+    </div>
+
+    <div class="project-list-container">
+        <table class="project-table">
+            <thead>
+                <tr>
+                    <th>用户名</th>
+                    <th>邮箱</th>
+                    <th>工作单位</th>
+                    <th>加入时间</th>
+                    <th>项目数量</th>
+                    <th>词汇数量</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="contributors-table-body"></tbody>
+        </table>
+
+        <div class="pagination-container">
+            <button type="button" id="prevPage" class="page-btn">←</button>
+            <span id="pageIndicator">第 1 页</span>
+            <button type="button" id="nextPage" class="page-btn">→</button>
+        </div>
+    </div>
+
     <div id="authContainer"></div>
 </body>
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      Auth.init('#userStatus');
-      Auth.bindProfileName('#userStatus');
-  
-      const profile = document.getElementById("profile");
-      const dropdown = document.getElementById("dropdownMenu");
-      if (profile && dropdown) {
-          profile.addEventListener('click', () => {
-          if (Auth.isLoggedIn()) {
-              dropdown.style.display = (dropdown.style.display === "none" || !dropdown.style.display)
-              ? "block" : "none";
-          } else {
-              Auth.showLogin();
-          }
-          });
-  
-          document.addEventListener("click", (e) => {
-              if (!profile.contains(e.target) && !dropdown.contains(e.target)) {
-                  dropdown.style.display = "none";
-              }
-          });
-      }
-  
-      const logoutBtn = document.getElementById("logoutBtn");
-      if (logoutBtn) {
-          logoutBtn.addEventListener("click", () => {
-              Auth.logout();
-              pop_up("已退出登录");
-              setTimeout(() => {
-                window.location.href = "contribute.html?logout=true";
-              }, 100);
-          });
-      }
+    const API_BASE = "http://47.238.241.178:80/api";
+    let currentPage = 1;
+    const perPage = 10;
+    let totalCount = 0;
 
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get("login") === "true" && !Auth.isLoggedIn()) {
-        if (typeof Auth !== "undefined" && Auth.showLogin) {
-            setTimeout(() => Auth.showLogin(), 300);
-            pop_up("请先登录");
+    let searchTerm = "";
+
+    async function loadContributors(page = 1) {
+        const tbody = document.getElementById("contributors-table-body");
+        const pageIndicator = document.getElementById("pageIndicator");
+        const prevBtn = document.getElementById("prevPage");
+        const nextBtn = document.getElementById("nextPage");
+        const pager = document.querySelector(".pagination-container");
+
+        if (!tbody) return;
+
+        try {
+            const resp = await fetch(`${API_BASE}/contributors?page=${page}&perPage=${perPage}`);
+
+            if (!resp.ok) {
+                const text = await resp.text();
+                console.error("加载贡献者失败:", resp.status, text);
+                pop_up("加载贡献者失败，请检查网络连接", "r");
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">加载失败</td></tr>`;
+                return;
+            }
+
+            const data = await resp.json();
+            const list = Array.isArray(data.contributors) ? data.contributors : [];
+            const q = (searchTerm || "").trim().toLowerCase();
+            const filtered = !q ? list : list.filter(u => {
+                const name = (u.username || "").toLowerCase();
+                const work = (u.workplace || "").toLowerCase();
+                return name.includes(q) || work.includes(q);
+            });
+            totalCount = Number(data.total || 0);
+            currentPage = Number(data.page || page);
+
+            if (!filtered.length) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #888;">暂无贡献者</td></tr>`;
+                pageIndicator.textContent = `第 ${currentPage} 页`;
+                prevBtn.disabled = currentPage <= 1;
+                nextBtn.disabled = true;
+                return;
+            }
+
+            tbody.innerHTML = "";
+            filtered.forEach(u => {
+                const workplace = (u.workplace && String(u.workplace).trim()) ? u.workplace : "--";
+                const createdAt = u.createdAt || "--";
+                const projectCount = u.projectCount ?? 0;
+                const vocabCount = u.vocabCount ?? 0;
+
+                const action = `<button type="button" class="view-btn" data-user="${u.username}">查看</button>`;
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${u.username || "--"}</td>
+                    <td>${u.email || "--"}</td>
+                    <td>${workplace}</td>
+                    <td>${createdAt}</td>
+                    <td>${projectCount}</td>
+                    <td>${vocabCount}</td>
+                    <td>${action}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll(".view-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const user = btn.getAttribute("data-user");
+                    window.location.href = `language_map.html?author=${encodeURIComponent(user)}`;
+                });
+            });
+
+            const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
+            if (pager) pager.style.display = totalPages > 1 ? "flex" : "none";
+            pageIndicator.textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+
+        } catch (err) {
+            console.error("加载贡献者出错:", err);
+            pop_up("加载贡献者失败，请检查网络连接", "r");
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #888;">加载失败</td></tr>`;
         }
-      }
-      else if (urlParams.get("logout") === "true" && !Auth.isLoggedIn()) {
-        if (typeof Auth !== "undefined" && Auth.showLogin) {
-            pop_up("已退出登录");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        Auth.init('#userStatus');
+        Auth.bindProfileName('#userStatus');
+    
+        const profile = document.getElementById("profile");
+        const dropdown = document.getElementById("dropdownMenu");
+        if (profile && dropdown) {
+            profile.addEventListener('click', () => {
+                if (Auth.isLoggedIn()) {
+                    dropdown.style.display = (dropdown.style.display === "none" || !dropdown.style.display)
+                    ? "block" : "none";
+                } else {
+                    Auth.showLogin();
+                }
+            });
+    
+            document.addEventListener("click", (e) => {
+                if (!profile.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = "none";
+                }
+            });
         }
-      }
+    
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", () => {
+                Auth.logout();
+                pop_up("已退出登录");
+                setTimeout(() => {
+                    window.location.href = "contribute.html?logout=true";
+                }, 100);
+            });
+        }
+
+        document.getElementById("prevPage")?.addEventListener("click", () => {
+            if (currentPage > 1) loadContributors(currentPage - 1);
+        });
+
+        document.getElementById("nextPage")?.addEventListener("click", () => {
+            loadContributors(currentPage + 1);
+        });
+
+        const searchInput = document.getElementById("contributorSearchInput");
+        const clearBtn = document.getElementById("contributorSearchClear");
+
+        if (searchInput) {
+            searchInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    searchTerm = searchInput.value || "";
+                    loadContributors(1);
+                }
+            });
+        }
+
+        if (clearBtn) {
+            clearBtn.addEventListener("click", () => {
+                searchTerm = "";
+                if (searchInput) searchInput.value = "";
+                loadContributors(1);
+                searchInput?.focus();
+            });
+        }
+
+        loadContributors(1);
     });
 </script>
   

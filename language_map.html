@@ -1,8 +1,8 @@
 <html lang="zh">
 <head>
-  <link rel="stylesheet" href="css/global.css">
-  <script src="js/auth.js"></script>
-  <script src="js/warning.js"></script>
+  <link rel="stylesheet" href="css/global.css?v=20251214">
+  <script src="js/auth.js?v=20251214"></script>
+  <script src="js/warning.js?v=20251214"></script>
   <script src="https://webapi.amap.com/maps?v=2.0&key=0190baafdb829edc71b1c2b0cb9e3dd0"></script>
   <meta charset="UTF-8">
   <title>汉藏语分化时间数据库</title>
@@ -270,40 +270,92 @@
       transition: opacity 0.15s;
     }
 
+    .project-list-header {
+      max-width: 1200px;
+      margin: 40px auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
     .project-list-title {
-        max-width: 1200px;
-        margin: 40px auto 10px;
-        font-size: 22px;
-        font-weight: bold;
-        color: #333;
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .project-list-header .project-list-title {
+      margin: 0;
+    }
+
+    .project-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 999px;
+      background: #fff;
+      min-width: 190px;
+    }
+
+    .project-search input {
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 14px;
+    }
+
+    .project-search button {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      color: #666;
     }
 
     .project-list-container {
-        max-width: 1200px;
-        margin: 0 auto 60px;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-        overflow-x: auto;
+      max-width: 1200px;
+      margin: 0 auto 60px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      overflow-x: auto;
     }
 
     .project-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
     }
 
     .project-table th,
     .project-table td {
-        border: 1px solid #ccc;
-        padding: 10px;
-        text-align: center;
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
     }
 
     .project-table th {
-        background-color: #eee;
-        font-weight: bold;
+      background-color: #eee;
+      font-weight: bold;
+    }
+
+    .pagination-container {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      margin-top: 16px;
+      gap: 10px;
+    }
+
+    .page-btn {
+      padding: 4px 12px;
+      font-size: 16px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -376,7 +428,17 @@
   
   <div id="project-tooltip" style="display:none; position:absolute;"></div>
 
-  <div class="project-list-title">语言研究项目列表</div>  
+  <div class="project-list-header">
+    <div class="project-list-title">语言研究项目列表</div>
+
+    <div class="project-search">
+      <input id="projectSearchInput"
+        type="text"
+        placeholder="搜索作者用户名..."
+        autocomplete="off">
+      <button id="projectSearchClear" type="button" title="清空">×</button>
+    </div>
+  </div>
 
   <div class="project-list-container">
     <table class="project-table">
@@ -394,11 +456,22 @@
     </table>
   </div>
 
+  <div class="pagination-container">
+      <button type="button" id="prevPage" class="page-btn">←</button>
+      <span id="pageIndicator">第 1 页</span>
+      <button type="button" id="nextPage" class="page-btn">→</button>
+    </div>
+
   <div id="authContainer"></div>
 </body>
 
 <script>
   const PROJECTS_API_BASE = "http://47.238.241.178:80/api/projects";
+
+  let currentPage = 1;
+  const pageSize = 20;
+
+  let currentSearchTerm = "";
 
   document.addEventListener("DOMContentLoaded", () => {
     Auth.init('#userStatus');
@@ -519,32 +592,31 @@
         const resp = await fetch(`${PROJECTS_API_BASE}?publicOnly=1`);
         const data = await resp.json();
         const list = Array.isArray(data.projects) ? data.projects : (Array.isArray(data) ? data : []);
-        const pubList = list.filter(p => p.is_public === 1 || p.is_public === true || p.isPublic);
 
-        const details = [];
-        for (const base of pubList) {
-          try {
-            const detailResp = await fetch(
-              `${PROJECTS_API_BASE}/${encodeURIComponent(base.id)}`
-            );
-            if (!detailResp.ok) continue;
+        const pubList = list
+          .filter(p => p.is_public === 1 || p.is_public === true || p.isPublic)
+          .map(p => ({
+            id: p.id,
+            isPublic: true,
 
-            const detailData = await detailResp.json();
-            if (!detailData.success) continue;
+            projectName: p.project_name || p.projectName || "未命名项目",
+            projectType: p.project_type ?? p.projectType ?? null,
+            numVocab: p.num_vocab ?? p.numVocab ?? 0,
 
-            const projDetail = detailData.project || {};
-            if (projDetail.isPublic) {
-              details.push(projDetail);
-            }
-          } catch (e) {
-            console.error("加载项目详情失败:", base.id, e);
-          }
-        }
+            languageCoords: p.languageCoords || [],
+            projectTimeRange: p.projectTimeRange || null,
 
-        publicProjectDetailsCache = details;
+            author: p.author_username || "未知作者",
+            updatedAt: p.updated_at || p.updatedAt || null,
+
+            hasTreeFile: p.has_treefile === 1 || p.hasTreeFile === true
+          }));
+
+        publicProjectDetailsCache = pubList;
         return publicProjectDetailsCache;
       } catch (err) {
-        console.error("加载公开项目详情失败:", err);
+        console.error("加载公开项目失败:", err);
+        pop_up("加载公开项目失败，请检查网络连接", "r");
         publicProjectDetailsCache = [];
         return publicProjectDetailsCache;
       }
@@ -608,53 +680,62 @@
     const tableBody = document.getElementById("project-table-body");
 
     async function renderPublicProjects() {
+      const tableBody = document.getElementById("project-table-body");
+      const pagination = document.querySelector(".pagination-container");
+      const pageIndicator = document.getElementById("pageIndicator");
+      const prevBtn = document.getElementById("prevPage");
+      const nextBtn = document.getElementById("nextPage");
+
       tableBody.innerHTML = "";
 
-      let projects = [];
-      try {
-        const resp = await fetch(`${PROJECTS_API_BASE}?publicOnly=1`);
-        const data = await resp.json();
+      const all = await fetchPublicProjectDetails();
+      let filtered = all.slice();
 
-        projects = Array.isArray(data.projects) ? data.projects : (Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("加载公开项目失败:", err);
+      const term = (currentSearchTerm || "").trim().toLowerCase();
+      if (term) {
+        filtered = filtered.filter(p => {
+          const a = (p.author || "").toLowerCase();
+          return a.includes(term);
+        });
       }
 
-      const pub = projects.filter(p => p.is_public === 1 || p.is_public === true || p.isPublic);
-
-      if (!pub.length) {
+      if (!filtered.length) {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="6" style="text-align:center;">暂无公开项目</td>`;
+        tr.innerHTML = `<td colspan="6" style="text-align:center; color: #888;">暂无匹配的公开项目</td>`;
         tableBody.appendChild(tr);
+
+        if (pagination) pagination.style.display = "none";
         return;
       }
 
-      pub.forEach(p => {
-        const name = p.project_name || p.projectName || "未命名项目";
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
 
-        const wordCount = (p.num_vocab ?? p.numVocab ?? 0);
+      const start = (currentPage - 1) * pageSize;
+      const pageRows = filtered.slice(start, start + pageSize);
+
+      pageRows.forEach(p => {
+        const name = p.projectName || "未命名项目";
+        const wordCount = p.numVocab ?? 0;
 
         const projectTypeLabels = {
           "1": "目标语言与其他语言的分化时间",
           "2": "多个目标语言的分化时间",
           "3": "目标语言的不同方言的分化时间"
         };
-        const typeRaw = p.project_type ?? p.projectType;
+        const typeRaw = p.projectType;
         const typeKey = typeRaw != null ? String(typeRaw) : null;
         const researchTarget = typeKey ? (projectTypeLabels[typeKey] || "--") : "--";
 
-        const author = p.author_username || "未知作者";
+        const author = p.author || "未知作者";
 
         let updatedText = "--";
-        const rawUpdated = p.updated_at || p.updatedAt || p.lastPublicUpdate;
+        const rawUpdated = p.updatedAt;
         if (rawUpdated) {
           try {
             const d = new Date(rawUpdated);
-            if (!isNaN(d.getTime())) {
-              updatedText = d.toLocaleString("zh-CN");
-            } else {
-              updatedText = String(rawUpdated);
-            }
+            updatedText = !isNaN(d.getTime()) ? d.toLocaleString("zh-CN") : String(rawUpdated);
           } catch (e) {
             updatedText = String(rawUpdated);
           }
@@ -680,6 +761,12 @@
           focusOnProject(id);
         });
       });
+
+      if (pagination) pagination.style.display = (filtered.length > pageSize) ? "flex" : "none";
+      if (pageIndicator) pageIndicator.textContent = `第 ${currentPage} 页`;
+
+      if (prevBtn) prevBtn.disabled = (currentPage <= 1);
+      if (nextBtn) nextBtn.disabled = (currentPage >= totalPages);
     }
 
     const DYNASTY_RANGES = [
@@ -803,7 +890,7 @@
       const projects = getProjectsWithTime(allProjects);
 
       if (!projects.length) {
-        grid.innerHTML = "<div style='text-align:center;color:#777;padding-top:80px;'>暂无带有时间信息的公开项目</div>";
+        grid.innerHTML = "<div style='text-align:center; padding-top:80px; color: #888;'>暂无带有时间信息的公开项目</div>";
         return;
       }
 
@@ -893,7 +980,39 @@
       });
     }
 
+    const searchInput = document.getElementById("projectSearchInput");
+    const searchBtn = document.getElementById("projectSearchBtn");
+    const clearBtn = document.getElementById("projectSearchClear");
+
+    function doSearch() {
+      currentSearchTerm = (searchInput?.value || "").trim();
+      currentPage = 1;
+      renderPublicProjects();
+    }
+
+    searchInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") doSearch();
+    });
+
+    clearBtn?.addEventListener("click", () => {
+      if (searchInput) searchInput.value = "";
+      currentSearchTerm = "";
+      currentPage = 1;
+      renderPublicProjects();
+    });
+
+    document.getElementById("prevPage")?.addEventListener("click", () => {
+      currentPage--;
+      renderPublicProjects();
+    });
+
+    document.getElementById("nextPage")?.addEventListener("click", () => {
+      currentPage++;
+      renderPublicProjects();
+    });
+
     const urlParams = new URLSearchParams(window.location.search);
+    const authorParam = urlParams.get("author");
     if (urlParams.get("login") === "true" && !Auth.isLoggedIn()) {
         if (typeof Auth !== "undefined" && Auth.showLogin) {
             setTimeout(() => Auth.showLogin(), 300);
@@ -906,7 +1025,15 @@
         }
     }
 
-    renderPublicProjects();
+    if (authorParam) {
+      searchInput.value = authorParam;
+      currentSearchTerm = authorParam;
+      fetchPublicProjectDetails().then(list => {
+        renderPublicProjects();
+      });
+    } else {
+      renderPublicProjects();
+    }
     attachDynastyLabelTooltips();
     drawProjectTimeline();
     loadMapMarkers();
