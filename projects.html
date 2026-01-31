@@ -7,123 +7,21 @@
   <title>项目管理</title>
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    header {
-      background-color: white;
-      color: black;
-      padding: 20px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-    }
-
-    .logo img {
-      height: 50px;
-    }
-
-    .menu {
-      display: flex;
-      align-items: center;
-    }
-
-    .menu ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      gap: 20px;
-    }
-
-    .menu ul li {
-      font-size: 18px;
-    }
-
-    .menu ul li a {
-      text-decoration: none;
-      color: black;
-      padding: 5px 10px;
-      border-radius: 5px;
-    }
-    
-    .menu ul li a.active {
-      background-color: #0073e6;
-      color: white;
-    }
-
-    .profile {
-      display: flex;
-      align-items: center;
-      margin-right: 75px;
-      gap: 16px;
-      cursor: pointer;
-    }
-    
-    .profile img {
-      height: 40px;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-
-    .profile-name {
-      color: gray;
-      font-size: 16px;
-      user-select: none;
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      top: 70px;
-      right: 190px;
-      background-color: white;
-      border: 1px solid #ccc;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 5px;
-      width: 140px;
-      z-index: 9999;
-      overflow: hidden;
-    }
-
-    .dropdown-menu a {
-      display: block;
-      padding: 10px 16px;
-      text-decoration: none;
-      color: #333;
-      font-size: 14px;
-    }
-
-    .dropdown-menu a:hover {
-      background-color: #f0f0f0;
-    }
-
-    .dropdown-menu button.dropdown-link {
-      display: block;
-      width: 100%;
-      padding: 10px 16px;
-      border: none;
-      background: none;
-      text-align: left;
-      font-size: 14px;
-      color: #333;
-      cursor: pointer;
-    }
-
-    .dropdown-menu button.dropdown-link:hover {
-      background-color: #f0f0f0;
+      color: var(--text-main);
+      scrollbar-color: var(--text-muted) var(--bg-color); 
     }
 
     .welcome-container {
       text-align: center;
-      margin-top: 50px;
-      font-size: 24px;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-top: 60px;
+      margin-bottom: 40px;
+      letter-spacing: -0.02em;
+      background: var(--navy-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
     }
 
     .project-description {
@@ -132,13 +30,16 @@
       margin: 0 auto 60px;
       font-size: 16px;
       line-height: 1.8;
-      color: #333;
+      color: var(--text-muted);
     }
     
     .my-projects-container {
       max-width: 1000px;
       margin: 40px auto;
-      padding: 0 20px;
+      padding: 16px;
+      border-radius: 12px;
+      background-color: var(--bg-color);
+      overflow: hidden;
     }
 
     .my-projects-header {
@@ -149,8 +50,11 @@
     }
 
     .my-projects-header h2 {
-      margin: 0;
-      font-size: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .new-project-button {
@@ -168,25 +72,48 @@
     }
 
     .project-table-wrapper {
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      overflow-x: auto;
+      max-height: 60vh;
+      overflow: auto;
+      max-width: 1000px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background-color: var(--bg-color);
+      overflow: hidden;
+      box-shadow: 0 4px 20px var(--shadow-color);
     }
 
     .project-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
     }
 
-    .project-table th,
-    .project-table td {
-      padding: 10px;
-      border-bottom: 1px solid #ccc;
+    .project-table th {
+      background-color: var(--surface-color);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      padding: 16px;
       text-align: center;
+      border-bottom: 1px solid var(--border-color);
+      border-right: none;
+      border-left: none;
+      border-top: none;
+    }
+
+    .project-table td {
+      padding: 16px;
+      color: var(--text-main);
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+      border-right: none;
+      border-left: none;
     }
 
     .project-table thead {
-      background-color: #f4f4f4;
+      background-color: var(--surface-color);
     }
 
     #noProjects {
@@ -238,7 +165,7 @@
 <body>
   <header>
     <div class="logo">
-      <img src="img/EdUHK_logo.png" alt="香港教育大学 Logo">
+      <img id="logo" src="img/EdUHK_logo.png" alt="香港教育大学 Logo">
     </div>
 
     <div class="menu">
@@ -251,9 +178,15 @@
       </nav>
     </div>
 
-    <div class="profile" id="profile">
-      <img id="profileImg" src="img/profile.png" alt="头像">
-      <span class="profile-name" id="userStatus">登录</span>
+    <div class="header-right">
+        <button id="themeToggle" class="theme-toggle-btn" title="切换主题">
+            <img id="themeIconImg" src="img/theme.png" alt="Theme">
+        </button>
+
+        <div class="profile" id="profile">
+            <img id="profileImg" src="img/profile.png" alt="头像">
+            <span class="profile-name" id="userStatus">登录</span>
+        </div>
     </div>
 
     <div id="dropdownMenu" class="dropdown-menu" style="display: none;">
@@ -308,11 +241,52 @@
   const pageSize = 5;
   let totalPages = 1;
 
+  const themeToggleBtn = document.getElementById('themeToggle');
+  const moonIcon = document.getElementById('moonIcon');
+  const sunIcon = document.getElementById('sunIcon');
+  const logo = document.getElementById('logo');
+  const htmlEl = document.documentElement;
+
+  const savedTheme = localStorage.getItem('theme');
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+    setDarkTheme();
+  } else {
+    setLightTheme();
+  }
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      if (htmlEl.getAttribute('data-theme') === 'dark') {
+        setLightTheme();
+        localStorage.setItem('theme', 'light');
+      } else {
+        setDarkTheme();
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+  }
+
+  function setDarkTheme() {
+    htmlEl.setAttribute('data-theme', 'dark');
+    if (moonIcon) moonIcon.style.display = 'none';
+    if (sunIcon) sunIcon.style.display = 'block';
+    if (logo) logo.src = "img/EdUHK_logo_dark.png";
+  }
+
+  function setLightTheme() {
+    htmlEl.removeAttribute('data-theme');
+    if (moonIcon) moonIcon.style.display = 'block';
+    if (sunIcon) sunIcon.style.display = 'none';
+    if (logo) logo.src = "img/EdUHK_logo.png"; 
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
-    if (!Auth.isLoggedIn()) {
-      window.location.href = "index.html?login=true";
-      return;
-    }
+    // if (!Auth.isLoggedIn()) {
+    //   window.location.href = "index.html?login=true";
+    //   return;
+    // }
 
     Auth.init('#userStatus');
     Auth.bindProfileName('#userStatus');
@@ -371,7 +345,7 @@
     let projects = [];
     try {
       const resp = await fetch(
-        `http://47.238.241.178:80/api/projects?authorId=${encodeURIComponent(myId)}`
+        `http://47.113.104.70:80/api/projects?authorId=${encodeURIComponent(myId)}`
       );
       if (!resp.ok) {
         console.error("加载项目失败:", resp.status, await resp.text());
@@ -474,7 +448,7 @@
 
         try {
           const resp = await fetch(
-            `http://47.238.241.178:80/api/projects/${encodeURIComponent(deleteId)}`,
+            `http://47.113.104.70:80/api/projects/${encodeURIComponent(deleteId)}`,
             { method: "DELETE" }
           );
           if (!resp.ok) {
@@ -497,7 +471,7 @@
         const id = e.currentTarget.getAttribute("data-id");
         try {
           const resp = await fetch(
-            `http://47.238.241.178:80/api/projects/${encodeURIComponent(id)}/publish`,
+            `http://47.113.104.70:80/api/projects/${encodeURIComponent(id)}/publish`,
             { method: "POST" }
           );
           if (!resp.ok) {
@@ -519,7 +493,7 @@
         const id = e.currentTarget.getAttribute("data-id");
         try {
           const resp = await fetch(
-            `http://47.238.241.178:80/api/projects/${encodeURIComponent(id)}/unpublish`,
+            `http://47.113.104.70:80/api/projects/${encodeURIComponent(id)}/unpublish`,
             { method: "POST" }
           );
           if (!resp.ok) {

@@ -9,7 +9,7 @@ function closeAuthModal() {
 }
 
 (function () {
-    const API_BASE = "http://47.238.241.178:80/api";
+    const API_BASE = "http://47.113.104.70:80/api";
 
     const STORAGE_KEYS = {
         isLoggedIn: 'isLoggedIn',

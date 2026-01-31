@@ -7,132 +7,26 @@
   <title>汉藏语分化时间数据库</title>
   <style>
     body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-    }
-
-    header {
-        background-color: white;
-        color: black;
-        padding: 20px 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-    }
-
-    .logo img {
-        height: 50px;
-    }
-
-    .menu {
-        display: flex;
-        align-items: center;
-    }
-
-    .menu ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        gap: 20px;
-    }
-
-    .menu ul li {
-        font-size: 18px;
-    }
-
-    .menu ul li a {
-        text-decoration: none;
-        color: black;
-        padding: 5px 10px;
-        border-radius: 5px;
-    }
-    
-    .menu ul li a.active {
-        background-color: #0073e6;
-        color: white;
-    }
-
-    .profile {
-        display: flex;
-        align-items: center;
-        margin-right: 75px;
-        gap: 16px;
-        cursor: pointer;
-    }
-    
-    .profile img {
-        height: 40px;
-        border-radius: 50%;
-        cursor: pointer;
-    }
-
-    .profile-name {
-        color: gray;
-        font-size: 16px;
-        user-select: none;
-    }
-
-    .dropdown-menu {
-        position: absolute;
-        top: 70px;
-        right: 190px;
-        background-color: white;
-        border: 1px solid #ccc;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 5px;
-        width: 140px;
-        z-index: 9999;
-        overflow: hidden;
-    }
-
-    .dropdown-menu a {
-        display: block;
-        padding: 10px 16px;
-        text-decoration: none;
-        color: #333;
-        font-size: 14px;
-    }
-
-    .dropdown-menu a:hover {
-        background-color: #f0f0f0;
-    }
-
-    .dropdown-menu button.dropdown-link {
-        display: block;
-        width: 100%;
-        padding: 10px 16px;
-        border: none;
-        background: none;
-        text-align: left;
-        font-size: 14px;
-        color: #333;
-        cursor: pointer;
-    }
-
-    .dropdown-menu button.dropdown-link:hover {
-        background-color: #f0f0f0;
+        color: var(--text-main);
+        scrollbar-color: var(--text-muted) var(--bg-color); 
     }
 
     .project-list-header {
         max-width: 1200px;
-        margin: 40px auto 10px;
+        margin: 40px auto 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
+        padding: 0 20px;
     }
 
     .project-list-title {
         font-size: 22px;
         font-weight: bold;
-        color: #333;
+        background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .project-list-header .project-list-title {
@@ -142,12 +36,16 @@
     .contributor-search {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 6px 10px;
-        border: 1px solid #ccc;
-        border-radius: 999px;
-        background: #fff;
-        min-width: 190px;
+        gap: 10px;
+        padding: 6px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 99px;
+        background: var(--surface-color);
+        transition: border-color 0.2s;
+    }
+
+    .contributor-search:focus-within {
+        border-color: var(--primary-blue);
     }
 
     .contributor-search input {
@@ -155,25 +53,32 @@
         outline: none;
         width: 100%;
         font-size: 14px;
+        background: transparent;
+        color: var(--text-main);
     }
 
     .contributor-search button {
         border: none;
         background: transparent;
         cursor: pointer;
-        font-size: 18px;
-        line-height: 1;
-        color: #666;
+        font-size: 20px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+    }
+
+    .contributor-search button:hover {
+        color: var(--text-main);
     }
 
     .project-list-container {
         max-width: 1200px;
-        margin: 0 auto 60px;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-        overflow-x: auto;
+        margin: 0 auto 80px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background-color: var(--bg-color);
+        overflow: hidden;
+        box-shadow: 0 4px 20px var(--shadow-color);
     }
 
     .project-table {
@@ -182,30 +87,76 @@
         font-size: 14px;
     }
 
-    .project-table th,
-    .project-table td {
-        border: 1px solid #ccc;
-        padding: 10px;
+    .project-table th {
+        background-color: var(--surface-color);
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        padding: 16px;
         text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        border-right: none;
+        border-left: none;
+        border-top: none;
     }
 
-    .project-table th {
-        background-color: #eee;
-        font-weight: bold;
+    .project-table td {
+        padding: 16px;
+        color: var(--text-main);
+        border-bottom: 1px solid var(--border-color);
+        border-right: none;
+        border-left: none;
+    }
+    
+    .project-table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .view-btn {
+        padding: 6px 16px;
+        background-color: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+    
+    .view-btn:hover {
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+        background-color: rgba(59, 130, 246, 0.05);
     }
 
     .pagination-container {
         display: none;
         justify-content: center;
         align-items: center;
-        margin-top: 16px;
-        gap: 10px;
+        margin-top: 30px;
+        gap: 16px;
+        color: var(--text-muted);
     }
 
     .page-btn {
-        padding: 4px 12px;
-        font-size: 16px;
+        padding: 8px 16px;
+        background-color: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--text-main);
         cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .page-btn:hover:not(:disabled) {
+        border-color: var(--text-muted);
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
   </style>
 </head>
@@ -213,7 +164,7 @@
 <body>
     <header>
       <div class="logo">
-        <img src="img/EdUHK_logo.png" href="index.html" alt="香港教育大学 Logo">
+        <img id="logo" src="img/EdUHK_logo.png" href="index.html" alt="香港教育大学 Logo">
       </div>
   
       <div class="menu">
@@ -226,9 +177,15 @@
         </nav>
       </div>
   
-      <div class="profile" id="profile">
-          <img id="profileImg" src="img/profile.png" alt="头像">
-          <span class="profile-name" id="userStatus">登录</span>
+      <div class="header-right">
+        <button id="themeToggle" class="theme-toggle-btn" title="切换主题">
+            <img id="themeIconImg" src="img/theme.png" alt="Theme">
+        </button>
+
+        <div class="profile" id="profile">
+            <img id="profileImg" src="img/profile.png" alt="头像">
+            <span class="profile-name" id="userStatus">登录</span>
+        </div>
       </div>
   
       <div id="dropdownMenu" class="dropdown-menu" style="display: none;">
@@ -277,7 +234,49 @@
 </body>
 
 <script>
-    const API_BASE = "http://47.238.241.178:80/api";
+    const API_BASE = "http://47.113.104.70:80/api";
+
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const moonIcon = document.getElementById('moonIcon');
+    const sunIcon = document.getElementById('sunIcon');
+    const logo = document.getElementById('logo');
+    const htmlEl = document.documentElement;
+
+    const savedTheme = localStorage.getItem('theme');
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+        setDarkTheme();
+    } else {
+        setLightTheme();
+    }
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+        if (htmlEl.getAttribute('data-theme') === 'dark') {
+            setLightTheme();
+            localStorage.setItem('theme', 'light');
+        } else {
+            setDarkTheme();
+            localStorage.setItem('theme', 'dark');
+        }
+        });
+    }
+
+    function setDarkTheme() {
+        htmlEl.setAttribute('data-theme', 'dark');
+        if (moonIcon) moonIcon.style.display = 'none';
+        if (sunIcon) sunIcon.style.display = 'block';
+        if (logo) logo.src = "img/EdUHK_logo_dark.png";
+    }
+
+    function setLightTheme() {
+        htmlEl.removeAttribute('data-theme');
+        if (moonIcon) moonIcon.style.display = 'block';
+        if (sunIcon) sunIcon.style.display = 'none';
+        if (logo) logo.src = "img/EdUHK_logo.png"; 
+    }
+
     let currentPage = 1;
     const perPage = 10;
     let totalCount = 0;

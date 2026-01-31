@@ -5,11 +5,11 @@
 # 汉藏语分化时间数据库
 ### Sino-Tibetan Divergence Time Database
 
-[![Generic badge](https://img.shields.io/badge/Subject-Historical_Linguistics-blue.svg)](http://47.238.241.178/index.html)
-[![Generic badge](https://img.shields.io/badge/Status-Active-success.svg)](http://47.238.241.178/index.html)
+[![Generic badge](https://img.shields.io/badge/Subject-Historical_Linguistics-blue.svg)](http://47.113.104.70/index.html)
+[![Generic badge](https://img.shields.io/badge/Status-Active-success.svg)](http://47.113.104.70/index.html)
 [![Generic badge](https://img.shields.io/badge/Institution-EdUHK-0056b3.svg)](https://www.eduhk.hk/)
 
-[**访问数据库 (Enter Database)**](http://47.238.241.178/index.html)
+[**访问数据库 (Enter Database)**](http://47.113.104.70/index.html)
 
 </div>
 

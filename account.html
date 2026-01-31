@@ -7,119 +7,10 @@
   <title>汉藏语分化时间数据库</title>
   <style>
     body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-    }
-
-    header {
-        background-color: white;
-        color: black;
-        padding: 20px 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-    }
-
-    .logo img {
-        height: 50px;
-    }
-
-    .menu {
-        display: flex;
-        align-items: center;
-    }
-
-    .menu ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        gap: 20px;
-    }
-
-    .menu ul li {
-        font-size: 18px;
-    }
-
-    .menu ul li a {
-        text-decoration: none;
-        color: black;
-        padding: 5px 10px;
-        border-radius: 5px;
+        color: var(--text-main);
+        scrollbar-color: var(--text-muted) var(--bg-color); 
     }
     
-    .menu ul li a.active {
-        background-color: #0073e6;
-        color: white;
-    }
-
-    .profile {
-        display: flex;
-        align-items: center;
-        margin-right: 75px;
-        gap: 16px;
-        cursor: pointer;
-    }
-    
-    .profile img {
-        height: 40px;
-        border-radius: 50%;
-        cursor: pointer;
-    }
-
-    .profile-name {
-        color: gray;
-        font-size: 16px;
-        user-select: none;
-    }
-
-    .dropdown-menu {
-        position: absolute;
-        top: 70px;
-        right: 190px;
-        background-color: white;
-        border: 1px solid #ccc;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 5px;
-        width: 140px;
-        z-index: 9999;
-        overflow: hidden;
-    }
-
-    .dropdown-menu a {
-        display: block;
-        padding: 10px 16px;
-        text-decoration: none;
-        color: #333;
-        font-size: 14px;
-    }
-
-    .dropdown-menu a:hover {
-        background-color: #f0f0f0;
-    }
-
-    .dropdown-menu button.dropdown-link {
-        display: block;
-        width: 100%;
-        padding: 10px 16px;
-        border: none;
-        background: none;
-        text-align: left;
-        font-size: 14px;
-        color: #333;
-        cursor: pointer;
-    }
-
-    .dropdown-menu button.dropdown-link:hover {
-        background-color: #f0f0f0;
-    }
-
     .account-container {
         max-width: 500px;
         margin: 100px auto;
@@ -234,7 +125,7 @@
 </body>
 
 <script>
-    const AUTH_API_BASE = "http://47.238.241.178:80/api";
+    const AUTH_API_BASE = "http://47.113.104.70:80/api";
 
     function loadAccount() {
         const user = JSON.parse(sessionStorage.getItem("currentUser"));
