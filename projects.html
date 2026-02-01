@@ -283,10 +283,10 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    // if (!Auth.isLoggedIn()) {
-    //   window.location.href = "index.html?login=true";
-    //   return;
-    // }
+    if (!Auth.isLoggedIn()) {
+      window.location.href = "index.html?login=true";
+      return;
+    }
 
     Auth.init('#userStatus');
     Auth.bindProfileName('#userStatus');
