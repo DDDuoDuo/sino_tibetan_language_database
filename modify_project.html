@@ -2373,7 +2373,7 @@
           if (!projectId) { pop_up("找不到项目ID，无法查看", "r"); return; }
           pop_up("正在从服务器获取树图文件...", "b");
 
-          const res = await fetch(`http://47.238.241.178:80/api/projects/${encodeURIComponent(projectId)}/treefile`);
+          const res = await fetch(`http://47.113.104.70:80/api/projects/${encodeURIComponent(projectId)}/treefile`);
           const data = await res.json();
           const tf = data?.treeFile || data;
 
@@ -2962,7 +2962,7 @@
         }
 
         try {
-          const resp = await fetch("http://47.238.241.178:80/api/projects", {
+          const resp = await fetch("http://47.113.104.70.:80/api/projects", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(draftForBackend)
