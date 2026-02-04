@@ -122,28 +122,29 @@
       color: #888;
     }
 
-    .edit-button {
-      padding: 4px 8px;
-      font-size: 12px;
+    .edit-button,
+    .delete-button,
+    .publish-button,
+    .unpublish-button,
+    .page-button {
+      padding: 6px 16px;
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      border-radius: 6px;
       cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
     }
-
-    .delete-button {
-      padding: 4px 8px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    .publish-button {
-      padding: 4px 8px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    .unpublish-button {
-      padding: 4px 8px;
-      font-size: 12px;
-      cursor: pointer;
+    
+    .edit-button:hover,
+    .delete-button:hover,
+    .publish-button:hover,
+    .unpublish-button:hover,
+    .page-button:hover {
+      border-color: var(--primary-blue);
+      color: var(--primary-blue);
+      background-color: rgba(59, 130, 246, 0.05);
     }
 
     .pagination-container {
@@ -152,12 +153,6 @@
       align-items: center;
       margin-top: 16px;
       gap: 10px;
-    }
-
-    .page-btn {
-      padding: 4px 12px;
-      font-size: 16px;
-      cursor: pointer;
     }
   </style>
 </head>
@@ -229,9 +224,9 @@
     </div>
 
     <div class="pagination-container">
-      <button type="button" id="prevPage" class="page-btn">←</button>
+      <button type="button" id="prevPage" class="page-button">←</button>
       <span id="pageIndicator">第 1 页</span>
-      <button type="button" id="nextPage" class="page-btn">→</button>
+      <button type="button" id="nextPage" class="page-button">→</button>
     </div>
   </div>
 </body>

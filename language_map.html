@@ -878,17 +878,21 @@
 
       DYNASTY_RANGES.forEach((dyn, idx) => {
         if (startDynastyIndex === null && up != null && up >= dyn.start && up <= dyn.end) {
-          startDynastyIndex = idx;
+          const tmp = (dyn.end - dyn.start) || 1;
+          startDynastyIndex = idx + (up - dyn.start) / tmp;
         }
         if (endDynastyIndex === null && lo != null && lo >= dyn.start && lo <= dyn.end) {
-          endDynastyIndex = idx;
+          const tmp = (dyn.end - dyn.start) || 1;
+          endDynastyIndex = idx + (lo - dyn.start) / tmp;
         }
       });
 
       if (startDynastyIndex == null) startDynastyIndex = 0;
-      if (endDynastyIndex == null) endDynastyIndex = DYNASTY_RANGES.length - 1;
+      if (endDynastyIndex == null) endDynastyIndex = DYNASTY_RANGES.length;
       if (endDynastyIndex < startDynastyIndex) {
-        const t = startDynastyIndex; startDynastyIndex = endDynastyIndex; endDynastyIndex = t;
+        const t = startDynastyIndex;
+        startDynastyIndex = endDynastyIndex;
+        endDynastyIndex = t;
       }
       return { startDynastyIndex, endDynastyIndex };
     }
@@ -915,7 +919,7 @@
 
         const { startDynastyIndex, endDynastyIndex } = mapProjectToDynastyRange(p);
         const startPercent = (startDynastyIndex / DYNASTY_RANGES.length) * 100;
-        const endPercent   = ((endDynastyIndex + 1) / DYNASTY_RANGES.length) * 100;
+        const endPercent = (endDynastyIndex / DYNASTY_RANGES.length) * 100;
         const widthPercent = Math.max(3, endPercent - startPercent);
 
         const line = document.createElement("div");
