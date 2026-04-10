@@ -1,9 +1,12 @@
+<!DOCTYPE html>
 <html lang="zh">
 <head>
+  <meta charset="UTF-8">
   <link rel="stylesheet" href="css/global.css?v=20251214">
+  <script src="js/config.js?v=20251214"></script>
   <script src="js/auth.js?v=20251214"></script>
   <script src="js/warning.js?v=20251214"></script>
-  <meta charset="UTF-8">
+  <script src="js/theme.js?v=20251214"></script>
   <title>项目管理</title>
   <style>
     body {
@@ -236,47 +239,6 @@
   const pageSize = 5;
   let totalPages = 1;
 
-  const themeToggleBtn = document.getElementById('themeToggle');
-  const moonIcon = document.getElementById('moonIcon');
-  const sunIcon = document.getElementById('sunIcon');
-  const logo = document.getElementById('logo');
-  const htmlEl = document.documentElement;
-
-  const savedTheme = localStorage.getItem('theme');
-  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-  if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
-    setDarkTheme();
-  } else {
-    setLightTheme();
-  }
-
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
-      if (htmlEl.getAttribute('data-theme') === 'dark') {
-        setLightTheme();
-        localStorage.setItem('theme', 'light');
-      } else {
-        setDarkTheme();
-        localStorage.setItem('theme', 'dark');
-      }
-    });
-  }
-
-  function setDarkTheme() {
-    htmlEl.setAttribute('data-theme', 'dark');
-    if (moonIcon) moonIcon.style.display = 'none';
-    if (sunIcon) sunIcon.style.display = 'block';
-    if (logo) logo.src = "img/EdUHK_logo_dark.png";
-  }
-
-  function setLightTheme() {
-    htmlEl.removeAttribute('data-theme');
-    if (moonIcon) moonIcon.style.display = 'block';
-    if (sunIcon) sunIcon.style.display = 'none';
-    if (logo) logo.src = "img/EdUHK_logo.png"; 
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
     if (!Auth.isLoggedIn()) {
       window.location.href = "index.html?login=true";
@@ -318,13 +280,11 @@
     }
 
     document.getElementById("prevPage").addEventListener("click", () => {
-      currentPage--;
-      loadProjectList();
+      if (currentPage > 1) { currentPage--; loadProjectList(); }
     });
 
     document.getElementById("nextPage").addEventListener("click", () => {
-      currentPage++;
-      loadProjectList();
+      if (currentPage < totalPages) { currentPage++; loadProjectList(); }
     });
   });
 
@@ -340,7 +300,7 @@
     let projects = [];
     try {
       const resp = await fetch(
-        `http://47.113.104.70:80/api/projects?authorId=${encodeURIComponent(myId)}`
+        `${API_BASE}/projects?authorId=${encodeURIComponent(myId)}`
       );
       if (!resp.ok) {
         console.error("加载项目失败:", resp.status, await resp.text());
@@ -410,18 +370,18 @@
       const researchTarget = typeKey ? (projectTypeLabels[typeKey] || "--") : "--";
 
       tr.innerHTML = `
-        <td>${projectName}</td>
-        <td>${vocabCount}</td>
-        <td>${researchTarget}</td>
-        <td>${authorName}</td>
-        <td>${createdAtText}</td>
+        <td>${escHTML(projectName)}</td>
+        <td>${escHTML(vocabCount)}</td>
+        <td>${escHTML(researchTarget)}</td>
+        <td>${escHTML(authorName)}</td>
+        <td>${escHTML(createdAtText)}</td>
         <td>
-          <button type="button" class="edit-button" data-id="${proj.id}">编辑</button>
-          <button type="button" class="delete-button" data-id="${proj.id}">删除</button>
+          <button type="button" class="edit-button" data-id="${escHTML(proj.id)}">编辑</button>
+          <button type="button" class="delete-button" data-id="${escHTML(proj.id)}">删除</button>
           <button type="button"
-            class="publish-button" data-id="${proj.id}" ${isPublic ? 'style="display:none;"' : ""}>设为公开</button>
+            class="publish-button" data-id="${escHTML(proj.id)}" ${isPublic ? 'style="display:none;"' : ""}>设为公开</button>
           <button type="button"
-            class="unpublish-button" data-id="${proj.id}" ${isPublic ? "" : 'style="display:none;"'}>取消公开</button>
+            class="unpublish-button" data-id="${escHTML(proj.id)}" ${isPublic ? "" : 'style="display:none;"'}>取消公开</button>
         </td>
       `;
 
@@ -442,8 +402,8 @@
         if (!confirm("确定要删除该项目吗？")) return;
 
         try {
-          const resp = await fetch(
-            `http://47.113.104.70:80/api/projects/${encodeURIComponent(deleteId)}`,
+          const resp = await apiFetch(
+            `${API_BASE}/projects/${encodeURIComponent(deleteId)}`,
             { method: "DELETE" }
           );
           if (!resp.ok) {
@@ -465,8 +425,8 @@
       btn.addEventListener("click", async (e) => {
         const id = e.currentTarget.getAttribute("data-id");
         try {
-          const resp = await fetch(
-            `http://47.113.104.70:80/api/projects/${encodeURIComponent(id)}/publish`,
+          const resp = await apiFetch(
+            `${API_BASE}/projects/${encodeURIComponent(id)}/publish`,
             { method: "POST" }
           );
           if (!resp.ok) {
@@ -487,8 +447,8 @@
       btn.addEventListener("click", async (e) => {
         const id = e.currentTarget.getAttribute("data-id");
         try {
-          const resp = await fetch(
-            `http://47.113.104.70:80/api/projects/${encodeURIComponent(id)}/unpublish`,
+          const resp = await apiFetch(
+            `${API_BASE}/projects/${encodeURIComponent(id)}/unpublish`,
             { method: "POST" }
           );
           if (!resp.ok) {

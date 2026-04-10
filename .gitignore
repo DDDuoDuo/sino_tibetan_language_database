@@ -1,3 +1,6 @@
 .DS_Store
 .vscode/
-backend/
+backend/.env
+backend/__pycache__/
+backend/**/__pycache__/
+backend/uploads/
