@@ -1,11 +1,9 @@
-<!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
   <link rel="stylesheet" href="css/global.css?v=20251214">
-  <script src="js/config.js?v=20251214"></script>
   <script src="js/auth.js?v=20251214"></script>
   <script src="js/warning.js?v=20251214"></script>
+  <meta charset="UTF-8">
   <title>汉藏语分化时间数据库</title>
   <style>
     body {
@@ -127,7 +125,7 @@
 </body>
 
 <script>
-    const AUTH_API_BASE = API_BASE;
+    const AUTH_API_BASE = "/api";
 
     function loadAccount() {
         const user = JSON.parse(sessionStorage.getItem("currentUser"));
@@ -156,7 +154,7 @@
         }
 
         try {
-            const resp = await apiFetch(`${AUTH_API_BASE}/profile`, {
+            const resp = await fetch(`${AUTH_API_BASE}/profile`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

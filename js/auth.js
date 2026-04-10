@@ -1,14 +1,3 @@
-/** Escape HTML special characters to prevent XSS when inserting into innerHTML. */
-function escHTML(str) {
-    if (str == null) return "";
-    return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-}
-
 function openAuthModal() {
     const m = document.getElementById('authModal');
     if (m) m.classList.remove('hidden');
@@ -20,7 +9,7 @@ function closeAuthModal() {
 }
 
 (function () {
-    // API_BASE is provided by js/config.js (loaded before this file)
+    const API_BASE = "/api";
 
     const STORAGE_KEYS = {
         isLoggedIn: 'isLoggedIn',
@@ -269,9 +258,10 @@ function closeAuthModal() {
             }
 
             try {
-                const resp = await apiFetch(`${API_BASE}/login`, {
+                const resp = await fetch(`${API_BASE}/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
+                    credentials: "include",
                     body: JSON.stringify({ email, password })
                 });
 
@@ -318,9 +308,10 @@ function closeAuthModal() {
             }
 
             try {
-                const resp = await apiFetch(`${API_BASE}/register`, {
+                const resp = await fetch(`${API_BASE}/register`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
+                    credentials: "include",
                     body: JSON.stringify({ email, username, password, title, workplace })
                 });
 
@@ -352,8 +343,9 @@ function closeAuthModal() {
         
         async logout() {
             try {
-                await apiFetch(`${API_BASE}/logout`, {
+                await fetch(`${API_BASE}/logout`, {
                 method: "POST",
+                credentials: "include",
                 });
             } catch (e) {
                 console.warn("logout request failed:", e);

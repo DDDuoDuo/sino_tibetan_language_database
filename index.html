@@ -71,17 +71,27 @@
         transform: none !important;
     }
 
-    .more-info p:last-child {
-        grid-column: auto;
-        background: none;
-        border: none;
+    .more-info-footer{
+        border-top: 1px solid #333;
+        margin-top: 40px;
+        padding-top: 20px;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;   /* ⭐ 核心：整体居中 */
         text-align: center;
+    }
+
+    .more-info-footer .contact {
         color: #3885e4;
         font-weight: 500;
-        padding: 0;
-        margin-top: 40px;
-        border-top: 1px solid #333;
-        padding-top: 20px;
+        margin-bottom: 24px;
+    }
+
+    .more-info-footer .tech-support {
+        color: #3885e4;
+        font-weight: 500;
+        margin-bottom: 24px;
     }
 
     .home-buttons {
@@ -130,6 +140,32 @@
         margin: 20px 0;
         opacity: 1; 
         transition: opacity 0.5s;
+    }
+
+    .tech-support {
+        display: flex;
+        align-items: center;      /* 垂直居中 */
+        gap: 12px;                /* 文字和 logo 的间距 */
+        margin-top: 0px;
+        color: #444;
+    }
+
+    .tech-support {
+        display: flex;
+        align-items: center;
+        justify-content: center;  /* ⭐ 居中 */
+        gap: 12px;
+        color: #111;
+    }
+
+    .tech-support img {
+        height: 112px;             /* 建议 32–48 */
+        opacity: 0.9;
+        transition: opacity 0.2s ease;
+    }
+
+    .tech-support img:hover {
+        opacity: 1;
     }
   </style>
 </head>
@@ -185,12 +221,23 @@
             在使用数据库资料时，请注明相关贡献者及本项目出处。数据库支持按语言、时间段、词汇或贡献者等多种方式进行检索与访问。引用格式：贡献者姓名、年份、项目名、website name, accessed on Year-Month-Date.
         </p>
         <p>
-            该数据库由香港教育大学人文学院中国语言及中文教育研究中心丁泓棣博士和梁源博士设计，由独立学者梁仁隽开发与维护，
+            该数据库由香港教育大学人文学院中国语言及中文教育研究中心丁泓棣博士和梁源博士设计，由独立学者梁仁隽、陈绵怿开发与维护，并由
+            <a href="https://www.culiutech.com/" target="_blank" rel="noopener noreferrer">醋溜科技团队</a>
+            提供技术协作与基础设施支持，包括服务器部署、系统架构优化与持续运维，形成学术研究与工程实践协同推进的研究型平台。
             旨致力于为语言学和历史研究者提供一个集科研、资源共享与学术交流于一体的专业平台。
         </p>
-        <p>
-            联系方式：hongdiding@gmail.com
-        </p>
+        <div class="more-info-footer">
+            <p class="contact">
+                联系方式：hongdiding@gmail.com
+            </p>
+
+            <p class="tech-support">
+                <span>技术支持：</span>
+                <a href="https://www.culiutech.com/" target="_blank" rel="noopener noreferrer">
+                    <img src="culiu-logo.png" alt="醋溜科技 Logo">
+                </a>
+            </p>
+        </div>
     </div>
 
     <h2 class="home-subtitle">探索与贡献</h2>

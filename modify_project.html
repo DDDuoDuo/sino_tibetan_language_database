@@ -1,13 +1,10 @@
-<!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
   <link rel="stylesheet" href="css/global.css?v=20251214">
-  <script src="js/config.js?v=20251214"></script>
   <script src="js/auth.js?v=20251214"></script>
   <script src="js/warning.js?v=20251214"></script>
-  <script src="js/theme.js?v=20251214"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <meta charset="UTF-8">
   <title>新建项目</title>
   <style>
     .body {
@@ -706,17 +703,17 @@
           
           <div class="form-buttons">
             <div class="left-buttons">
-              <button disabled type="button" class="nav-button" id="infoPrevBtn">上一页</button>
+              <button disabled type="button" class="nav-button" id="leftBtn">上一页</button>
             </div>
             <div class="right-buttons">
-                <button type="button" class="nav-button" id="infoNextBtn" onclick="showPage(1)">下一页</button>
+                <button type="button" class="nav-button" id="rightBtn" onclick="showPage(1)">下一页</button>
             </div>
           </div>
 
           <div class="form-buttons">
             <div class="left-buttons">
-                <button type="button" class="nav-button" id="infoSaveBtn" onclick="saveDraft()">保存草稿</button>
-                <button type="button" class="nav-button" id="infoBackBtn" onclick="window.location.href = 'projects.html'">返回</button>
+                <button type="button" class="nav-button" id="leftBtn" onclick="saveDraft()">保存草稿</button>
+                <button type="button" class="nav-button" id="leftBtn" onclick="window.location.href = 'projects.html'">返回</button>
             </div>
           </div>
         </form>
@@ -811,17 +808,17 @@
 
         <div class="form-buttons">
           <div class="left-buttons">
-            <button type="button" class="nav-button" id="vocabPrevBtn" onclick="showPage(0)">上一页</button>
+            <button type="button" class="nav-button" id="leftBtn" onclick="showPage(0)">上一页</button>
           </div>
           <div class="right-buttons">
-              <button disabled type="button" class="nav-button" id="vocabNextBtn">下一页</button>
+              <button disabled type="button" class="nav-button"id="rightBtn">下一页</button>
           </div>
         </div>
-
+        
         <div class="form-buttons">
           <div class="left-buttons">
-            <button type="button" class="nav-button" id="vocabSaveBtn" onclick="saveDraft()">保存草稿</button>
-            <button type="button" class="nav-button" id="vocabBackBtn" onclick="window.location.href = 'projects.html'">返回</button>
+            <button type="button" class="nav-button" id="leftBtn" onclick="saveDraft()">保存草稿</button>
+            <button type="button" class="nav-button" id="leftBtn" onclick="window.location.href = 'projects.html'">返回</button>
           </div>
         </div>
       </form>
@@ -1190,6 +1187,47 @@
 </body>
 
 <script>
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const moonIcon = document.getElementById('moonIcon');
+    const sunIcon = document.getElementById('sunIcon');
+    const logo = document.getElementById('logo');
+    const htmlEl = document.documentElement;
+
+    const savedTheme = localStorage.getItem('theme');
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+        setDarkTheme();
+    } else {
+        setLightTheme();
+    }
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+        if (htmlEl.getAttribute('data-theme') === 'dark') {
+            setLightTheme();
+            localStorage.setItem('theme', 'light');
+        } else {
+            setDarkTheme();
+            localStorage.setItem('theme', 'dark');
+        }
+        });
+    }
+
+    function setDarkTheme() {
+        htmlEl.setAttribute('data-theme', 'dark');
+        if (moonIcon) moonIcon.style.display = 'none';
+        if (sunIcon) sunIcon.style.display = 'block';
+        if (logo) logo.src = "img/EdUHK_logo_dark.png";
+    }
+
+    function setLightTheme() {
+        htmlEl.removeAttribute('data-theme');
+        if (moonIcon) moonIcon.style.display = 'block';
+        if (sunIcon) sunIcon.style.display = 'none';
+        if (logo) logo.src = "img/EdUHK_logo.png"; 
+    }
+
     let currentPage = 0;
     const totalPages = 6;
 
@@ -1219,9 +1257,9 @@
       const div = document.createElement("div");
       div.className = "language-group";
       div.innerHTML = `
-        <input type="text" class="language-input" placeholder="输入语言名称" value="${escHTML(value)}">
-        <input type="text" class="coord-input lng-input" placeholder="经度" value="${escHTML(lng)}">
-        <input type="text" class="coord-input lat-input" placeholder="纬度" value="${escHTML(lat)}">
+        <input type="text" class="language-input" placeholder="输入语言名称" value="${value}">
+        <input type="text" class="coord-input lng-input" placeholder="经度" value="${lng}">
+        <input type="text" class="coord-input lat-input" placeholder="纬度" value="${lat}">
         <button type="button" class="remove-language">移除</button>
       `;
       languageContainer.appendChild(div);
@@ -2133,7 +2171,7 @@
         if (!projectId) return null;
         try {
           const resp = await fetch(
-            `${API_BASE}/projects/${encodeURIComponent(projectId)}`
+            `/api/projects/${encodeURIComponent(projectId)}`
           );
           if (!resp.ok) {
             if (resp.status !== 404) {
@@ -2332,42 +2370,64 @@
       renderTimeConclusion();
 
       document.getElementById("viewTreeFile").addEventListener("click", async () => {
-        // If user just picked a local file, preview it from the local object URL
-        if (window.tempTreeFile?.localURL) {
-          window.open(window.tempTreeFile.localURL, "_blank");
-          return;
+        let src = window.tempTreeFile?.dataURL || window.currentTreeDataURL;
+        let title = window.currentTreeFileName || "treefile";
+
+        if (!src) {
+          const projectId = window.currentProject.id;
+          if (!projectId) { pop_up("找不到项目ID，无法查看", "r"); return; }
+          pop_up("正在从服务器获取树图文件...", "b");
+
+          const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/treefile`);
+          const data = await res.json();
+          const tf = data?.treeFile || data;
+
+          if (!tf?.content) { pop_up("未找到树图文件内容", "r"); return; }
+
+          const mime = tf.type || "image/png";
+          src = tf.content.startsWith("data:") ? tf.content : `data:${mime};base64,${tf.content}`;
+          title = tf.name || title;
         }
 
-        // Otherwise fetch from server
-        const projectId = window.currentProject?.id;
-        if (!projectId) { pop_up("找不到项目ID，无法查看", "r"); return; }
+        if (!src) { pop_up("没有可预览的谱系树", "b"); return; }
 
-        const url = `${API_BASE}/projects/${encodeURIComponent(projectId)}/treefile/download`;
-        window.open(url, "_blank");
+        const win = window.open("", "_blank");
+        if (!win) { pop_up("浏览器拦截了弹窗，请允许弹窗后再试", "r"); return; }
+
+        const escapedSrc = src.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+        win.document.write(`
+          <html><head><meta charset="utf-8"><title>${title}</title></head>
+          <body style="margin:0;display:flex;align-items:center;justify-content:center;background:#202020;">
+            <img src="${escapedSrc}" style="max-width:100%;max-height:100vh;object-fit:contain;" />
+          </body></html>
+        `);
+        win.document.close();
       });
 
       treeFileInput.addEventListener("change", () => {
         const file = treeFileInput.files[0];
         if (!file) return;
 
-        window.tempTreeFile = {
-          file: file,
-          name: file.name,
-          type: file.type,
-          localURL: URL.createObjectURL(file),
-        };
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          window.tempTreeFile = {
+            name: file.name,
+            type: file.type,
+            dataURL: e.target.result
+          };
 
-        window.currentTreeFileName = file.name;
-        treeFileActions.style.display = "flex";
-        isTreeFileRemoved = false;
+          window.currentTreeDataURL = null;
+          window.currentTreeFileName = file.name;
+          treeFileActions.style.display = "flex";
+        };
+        
+        reader.readAsDataURL(file);
       });
 
       removeTreeFile.addEventListener("click", () => {
-        if (window.tempTreeFile?.localURL) {
-          URL.revokeObjectURL(window.tempTreeFile.localURL);
-        }
         treeFileInput.value = "";
         window.tempTreeFile = null;
+        window.currentTreeDataURL = null;
         window.currentTreeFileName = null;
         treeFileActions.style.display = "none";
         isTreeFileRemoved = true;
@@ -2378,7 +2438,7 @@
           const index = vocabData.findIndex(item => item.id === id);
           if (index !== -1) {
             vocabData.splice(index, 1);
-            loadVocabList();
+            loadVocabList(vocabData);
           }
 
           const totalAfterDelete = Math.ceil(vocabData.length / pageSize);
@@ -2853,11 +2913,29 @@
         lowerEra: computed.lowerEra
       } : { upper: '', upperEra: 'BC', lower: '', lowerEra: 'AD' };
 
+      let treeFileForBackend = undefined;
       let hasTreeFile = !!(existing?.hasTreeFile ?? 0);
+
+      if (window.tempTreeFile?.dataURL) {
+        treeFileForBackend = {
+          name: window.tempTreeFile.name,
+          type: window.tempTreeFile.type,
+          content: window.tempTreeFile.dataURL
+        };
+        hasTreeFile = true;
+        isTreeFileRemoved = false;
+      } else if (isTreeFileRemoved) {
+        treeFileForBackend = null;
+        hasTreeFile = false;
+      } else if (hasTreeFile) {
+        treeFileForBackend = undefined;
+        hasTreeFile = true;
+      }
+
       const isPublic = existing?.isPublic ?? false;
 
       async function finalizeSave() {
-        const draftForBackend = {
+        const baseFields = {
           id: currentId,
           projectName,
           projectDesc,
@@ -2882,8 +2960,14 @@
           hasTreeFile,
         };
 
+        const draftForBackend = { ...baseFields };
+
+        if (treeFileForBackend !== undefined) {
+          draftForBackend.treeFile = treeFileForBackend;
+        }
+
         try {
-          const resp = await apiFetch(`${API_BASE}/projects`, {
+          const resp = await fetch("/api/projects", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(draftForBackend)
@@ -2904,46 +2988,16 @@
             }
 
             if (data && data.project) {
-              currentProject = { ...data.project, hasTreeFile };
-              window.currentProject = currentProject;
-            }
-
-            // Upload new treefile if user selected one
-            if (window.tempTreeFile?.file) {
-              const fd = new FormData();
-              fd.append("file", window.tempTreeFile.file);
-              try {
-                const upResp = await apiFetch(
-                  `${API_BASE}/projects/${encodeURIComponent(currentId)}/treefile`,
-                  { method: "POST", body: fd }
-                );
-                if (upResp.ok) {
-                  hasTreeFile = true;
-                  if (window.currentProject) window.currentProject.hasTreeFile = true;
-                } else {
-                  console.error("上传树图失败:", upResp.status);
-                  pop_up("项目已保存，但树图文件上传失败", "r");
-                }
-              } catch (e) {
-                console.error("上传树图出错:", e);
-                pop_up("项目已保存，但树图文件上传失败", "r");
-              }
-              window.tempTreeFile = null;
-            }
-
-            // Delete treefile if user clicked remove
-            if (isTreeFileRemoved) {
-              try {
-                await apiFetch(
-                  `${API_BASE}/projects/${encodeURIComponent(currentId)}/treefile`,
-                  { method: "DELETE" }
-                );
-                hasTreeFile = false;
-                if (window.currentProject) window.currentProject.hasTreeFile = false;
-              } catch (e) {
-                console.error("删除树图出错:", e);
-              }
-              isTreeFileRemoved = false;
+              const newProject = {
+                ...data.project,
+                hasTreeFile,
+                treeFile:
+                  treeFileForBackend === null ? null :
+                  treeFileForBackend === undefined ? (data.project.treeFile || null) :
+                  treeFileForBackend,
+              };
+              currentProject = newProject;
+              window.currentProject = newProject;
             }
 
             if (currentPage <= 1) {
@@ -2962,9 +3016,11 @@
       }
 
       await finalizeSave();
+      // window.tempTreeFile = null;
+      // window.currentTreeDataURL = null;
     };
 
-    window.loadVocabList = function loadVocabList() {
+    window.loadVocabList = function loadVocabList(vocabList) {
       const tbody = document.getElementById("vocabBody");
       const noVocabs = document.getElementById("noVocabs");
 
@@ -2983,41 +3039,30 @@
       vocabData.slice(start, start + pageSize).forEach((item, index) => {
         const row = document.createElement("tr");
 
-        const timeText = item.timeInfo
-          ? `${escHTML(item.timeInfo.lower)} ${escHTML(item.timeInfo.lowerEra)} - ${escHTML(item.timeInfo.upper)} ${escHTML(item.timeInfo.upperEra)}`
-          : "--";
-
-        const safeId = escHTML(item.id);
-
         row.innerHTML = `
-          <td>${escHTML(item.word || "--")}</td>
-          <td>${escHTML(item.level || "--")}</td>
+          <td>${item.word || "--"}</td>
+          <td>${item.level || "--"}</td>
           <td>${item.fullMatch ? "Y" : "N"}</td>
           <td>${item.partialMatch ? "Y" : "N"}</td>
           <td>${item.relaxedMatch ? "Y" : "N"}</td>
-          <td>${timeText}</td>
+          <td>${item.timeInfo ? (item.timeInfo.lower + " " + item.timeInfo.lowerEra + " - " + item.timeInfo.upper + " " + item.timeInfo.upperEra) : "--"}</td>
           <td>
             ${
               item.evidence
-                ? `<a href="${escHTML(item.evidence)}" download="${escHTML(item.word || 'compare')}_证据.csv">链接</a>`
+                ? `<a href="${item.evidence}" download="${item.word || 'compare'}_证据.csv">链接</a>`
                 : "--"
             }
           </td>
-          <td>${escHTML(item.recordedAt || "--")}</td>
+          <td>${item.recordedAt || "--"}</td>
           <td>
-            <button type="button" class="edit-button" data-id="${safeId}">编辑</button>
-            <button type="button" class="delete-button" data-id="${safeId}">删除</button>
+            <button type="button" class="edit-button" data-id="${item.id}">编辑</button>
+            <button type="button" class="delete-button" onclick="deleteVocab(${item.id})">删除</button>
           </td>
         `;
 
         tbody.appendChild(row);
 
         document.getElementById("vocabListTitle").textContent = `词汇列表（已有 ${vocabData.length} 个词汇）`;
-
-        row.querySelector(".delete-button").addEventListener("click", () => {
-          const delId = parseInt(row.querySelector(".delete-button").getAttribute("data-id"));
-          deleteVocab(delId);
-        });
 
         const editBtn = row.querySelector(".edit-button");
 
@@ -3219,7 +3264,7 @@
 
       saveDraft();
       showPage(1);
-      loadVocabList();
+      loadVocabList(vocabData);
     }
 </script>
 
