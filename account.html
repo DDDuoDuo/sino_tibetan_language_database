@@ -77,9 +77,15 @@
         </nav>
       </div>
   
-      <div class="profile" id="profile">
-          <img id="profileImg" src="img/profile.png" alt="头像">
-          <span class="profile-name" id="userStatus">登录</span>
+      <div class="header-right">
+        <button id="themeToggle" class="theme-toggle-btn" title="切换主题">
+            <img id="themeIconImg" src="img/theme.png" alt="Theme">
+        </button>
+
+        <div class="profile" id="profile">
+            <img id="profileImg" src="img/profile.png" alt="头像">
+            <span class="profile-name" id="userStatus">登录</span>
+        </div>
       </div>
   
       <div id="dropdownMenu" class="dropdown-menu" style="display: none;">
@@ -125,6 +131,47 @@
 </body>
 
 <script>
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const moonIcon = document.getElementById('moonIcon');
+    const sunIcon = document.getElementById('sunIcon');
+    const logo = document.getElementById('logo');
+    const htmlEl = document.documentElement;
+
+    const savedTheme = localStorage.getItem('theme');
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+        setDarkTheme();
+    } else {
+        setLightTheme();
+    }
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            if (htmlEl.getAttribute('data-theme') === 'dark') {
+                setLightTheme();
+                localStorage.setItem('theme', 'light');
+            } else {
+                setDarkTheme();
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+    }
+
+    function setDarkTheme() {
+        htmlEl.setAttribute('data-theme', 'dark');
+        if (moonIcon) moonIcon.style.display = 'none';
+        if (sunIcon) sunIcon.style.display = 'block';
+        if (logo) logo.src = "img/EdUHK_logo_dark.png";
+    }
+
+    function setLightTheme() {
+        htmlEl.removeAttribute('data-theme');
+        if (moonIcon) moonIcon.style.display = 'block';
+        if (sunIcon) sunIcon.style.display = 'none';
+        if (logo) logo.src = "img/EdUHK_logo.png"; 
+    }
+
     const AUTH_API_BASE = "/api";
 
     function loadAccount() {
