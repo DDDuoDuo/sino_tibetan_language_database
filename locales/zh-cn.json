@@ -1,0 +1,357 @@
+{
+  "meta": {
+    "locale": "zh-CN",
+    "languageName": "简体中文",
+    "siteTitle": "汉藏语分化时间数据库"
+  },
+  "common": {
+    "nav": {
+      "home": "首页",
+      "research": "研究",
+      "contributors": "贡献者",
+      "account": "我的账户",
+      "projects": "管理项目",
+      "logout": "退出登录"
+    },
+    "actions": {
+      "login": "登录",
+      "register": "注册",
+      "save": "保存",
+      "saveInfo": "保存信息",
+      "saveDraft": "保存草稿",
+      "saveAndReturn": "保存并返回",
+      "back": "返回",
+      "previous": "上一页",
+      "next": "下一页",
+      "clear": "清空",
+      "view": "查看",
+      "edit": "编辑",
+      "delete": "删除",
+      "remove": "移除",
+      "publish": "设为公开",
+      "unpublish": "取消公开",
+      "exportCsv": "导出 CSV 文件",
+      "close": "关闭"
+    },
+    "status": {
+      "loadingFailed": "加载失败",
+      "noData": "暂无数据",
+      "unknownUser": "未知用户",
+      "unknownAuthor": "未知作者",
+      "untitledProject": "未命名项目",
+      "networkError": "请检查网络连接"
+    },
+    "theme": {
+      "toggle": "切换主题"
+    },
+    "pagination": {
+      "page": "第 {page} 页",
+      "pageOfTotal": "第 {page} 页 / 共 {totalPages} 页"
+    }
+  },
+  "auth": {
+    "loginTitle": "登录",
+    "registerTitle": "注册",
+    "email": "邮箱",
+    "password": "密码",
+    "username": "姓名/用户名",
+    "title": "称谓",
+    "workplace": "工作单位（选填）",
+    "noAccount": "没有账号？",
+    "hasAccount": "已有账号？",
+    "requiredLoginFields": "请填写邮箱和密码",
+    "requiredRegisterFields": "请填写所有必填字段",
+    "loginSuccess": "登录成功",
+    "loginFailed": "登录失败",
+    "loginNetworkFailed": "登录失败，请检查网络连接",
+    "registerFailed": "注册失败",
+    "registerNetworkFailed": "注册失败，请检查网络连接",
+    "logoutSuccess": "已退出登录",
+    "titles": {
+      "professor": "教授",
+      "doctor": "博士",
+      "mr": "先生",
+      "ms": "女士"
+    }
+  },
+  "home": {
+    "headline": "汉藏语分化时间数据库",
+    "introParagraphs": [
+      "汉藏语分化时间数据库旨在通过历史比较法，基于词汇证据，收集汉藏语系内各语言与方言的分化时间信息。",
+      "这些词汇证据自带时间信息，如工具材料名称（石、铁、铜）、驯化动物、外来物种或概念、借词等。",
+      "结合考古研究结果和历史文献资料，通过将词汇进行历史分层（Lexical Stratigraphic Analysis），可以判定目标语言或方言的分化上下限。用户可通过本数据库追溯语言分化历程，并比较语系内不同分支的分化模式。",
+      "本数据库所收录的词汇与语言数量将持续增加，并随着更多研究者的参与而不断丰富。每个数据集均由相应语言及其历史演变领域的专家提供。",
+      "在使用数据库资料时，请注明相关贡献者及本项目出处。数据库支持按语言、时间段、词汇或贡献者等多种方式进行检索与访问。引用格式：贡献者姓名、年份、项目名、website name, accessed on Year-Month-Date.",
+      "该数据库由香港教育大学人文学院中国语言及中文教育研究中心丁泓棣博士和梁源博士设计，由独立学者梁仁隽开发与维护，旨致力于为语言学和历史研究者提供一个集科研、资源共享与学术交流于一体的专业平台。",
+      "联系方式：hongdiding@gmail.com"
+    ],
+    "exploreAndContribute": "探索与贡献",
+    "prompt": "您可以通过以下方式进入数据库，浏览研究成果或录入新数据",
+    "exploreResearch": "查询研究",
+    "contributeResearch": "录入研究"
+  },
+  "research": {
+    "mapTitle": "汉藏语分化时间分布信息",
+    "timelineAria": "朝代时间轴（X轴）",
+    "timelineHint": "*数据以朝代进行断代",
+    "projectListTitle": "语言研究项目列表",
+    "searchPlaceholder": "搜索作者用户名...",
+    "noTimedProjects": "暂无带有时间信息的公开项目",
+    "noMatchingProjects": "暂无匹配的公开项目",
+    "loadPublicProjectsFailed": "加载公开项目失败，请检查网络连接",
+    "dynasties": [
+      "史前",
+      "商",
+      "西周",
+      "春秋",
+      "战国",
+      "秦",
+      "汉",
+      "三国",
+      "晋",
+      "南北朝",
+      "隋",
+      "唐",
+      "五代十国",
+      "宋",
+      "元",
+      "明",
+      "清",
+      "民国",
+      "现代"
+    ],
+    "table": {
+      "projectName": "项目名称",
+      "vocabCount": "词汇数量",
+      "researchTarget": "研究目标",
+      "author": "作者",
+      "updatedAt": "更新时间",
+      "actions": "操作"
+    }
+  },
+  "contributors": {
+    "title": "贡献者列表",
+    "searchPlaceholder": "搜索用户名 / 工作单位…",
+    "loadFailed": "加载贡献者失败，请检查网络连接",
+    "empty": "暂无贡献者",
+    "table": {
+      "username": "用户名",
+      "email": "邮箱",
+      "workplace": "工作单位",
+      "joinedAt": "加入时间",
+      "projectCount": "项目数量",
+      "vocabCount": "词汇数量",
+      "actions": "操作"
+    }
+  },
+  "projects": {
+    "title": "项目管理",
+    "welcome": "欢迎，{username}",
+    "description": "我们致力于通过收集自带时间信息的词汇数据，通过历史比较的方法，推断汉藏语言或者方言的分化时间，并追踪可能的人类迁移路径，建立开放共享的词汇数据库，开展语言演化研究。",
+    "myProjects": "我的项目列表",
+    "newProject": "新建项目",
+    "empty": "暂无项目",
+    "loadFailed": "加载项目失败，请检查网络连接",
+    "deleteConfirm": "确定要删除该项目吗？",
+    "deleteFailed": "删除失败，请检查网络连接",
+    "deleteSuccess": "已删除项目",
+    "deleteNetworkFailed": "删除时连接服务器出错，请检查网络连接",
+    "publishFailed": "设为公开失败，请检查网络连接",
+    "publishSuccess": "项目已设为公开",
+    "publishNetworkFailed": "设为公开时连接服务器出错",
+    "unpublishFailed": "取消公开失败，请检查网络连接",
+    "unpublishSuccess": "项目已取消公开",
+    "unpublishNetworkFailed": "取消公开时连接服务器出错",
+    "table": {
+      "projectName": "项目名称",
+      "vocabCount": "词汇数量",
+      "researchTarget": "研究目标",
+      "author": "作者",
+      "createdAt": "创建时间",
+      "actions": "操作"
+    },
+    "projectTypes": {
+      "targetVsOther": "目标语言与其他语言的分化时间",
+      "multipleTargets": "多个目标语言的分化时间",
+      "dialects": "目标语言的不同方言的分化时间"
+    }
+  },
+  "account": {
+    "title": "账户信息",
+    "email": "邮箱",
+    "username": "用户名",
+    "titleLabel": "称谓",
+    "workplace": "工作单位",
+    "optionalPlaceholder": "选填",
+    "usernameRequired": "用户名不能为空",
+    "saveFailed": "保存失败，请检查网络连接",
+    "saveSuccess": "信息已保存"
+  },
+  "projectEditor": {
+    "newTitle": "新建项目",
+    "editTitle": "编辑项目",
+    "requirementsTitle": "贡献者要求：",
+    "requirements": [
+      "具有目标语言或者方言的比较词汇",
+      "包括至少2个目标语言或者方言",
+      "每个语言或者方言要求有2000词或者以上词表",
+      "需有一棵覆盖目标语言或者方言的参考谱系树"
+    ],
+    "fields": {
+      "projectId": "项目ID：",
+      "projectName": "项目名称：",
+      "projectNamePlaceholder": "请输入项目名称",
+      "projectDesc": "项目简介：",
+      "projectDescPlaceholder": "请简要描述该项目的内容、目的或数据来源",
+      "projectType": "项目类型：",
+      "languageList": "语言列表：",
+      "treeFile": "谱系树：",
+      "references": "参考文献：",
+      "referencesPlaceholder": "请输入参考资料链接或数据来源"
+    },
+    "language": {
+      "add": "添加语言",
+      "max": "最多只能添加6种语言",
+      "namePlaceholder": "输入语言名称",
+      "longitudePlaceholder": "经度",
+      "latitudePlaceholder": "纬度",
+      "currentCount": "当前语言数：{count}；最多可再添加 {remaining} 行"
+    },
+    "treeFile": {
+      "missingProjectId": "找不到项目ID，无法查看",
+      "noPreview": "没有可预览的谱系树",
+      "popupBlocked": "浏览器拦截了弹窗，请允许弹窗后再试",
+      "uploadFailed": "项目已保存，但树图文件上传失败",
+      "deleteFailed": "删除树图出错"
+    },
+    "save": {
+      "backendFailed": "草稿已保存到浏览器，但同步到服务器失败，请检查网络连接",
+      "backendInvalidJson": "草稿已保存到浏览器，但同步到服务器失败，请检查网络连接",
+      "networkFailed": "草稿已保存到浏览器，但连接服务器时出错",
+      "success": "草稿已保存并同步到服务器"
+    }
+  },
+  "vocab": {
+    "pageTitle": "词汇列表",
+    "addVocab": "添加词汇",
+    "selectCategoryAndWord": "请选择类别和词汇",
+    "deleteConfirm": "确定要删除该词汇吗？",
+    "deleteSuccess": "已删除词汇",
+    "noVocab": "暂无词汇",
+    "currentWordEmpty": "暂无词汇",
+    "selectWord": "请选择词汇",
+    "customWordPlaceholder": "请输入词汇",
+    "table": {
+      "word": "词项",
+      "level": "历史层次",
+      "fullMatch": "完全普遍对应",
+      "partialMatch": "不完全普遍对应",
+      "relaxedMatch": "放宽的完全普遍对应",
+      "timeInfo": "时间信息",
+      "evidence": "证据词汇",
+      "recordedAt": "录入时间",
+      "actions": "操作",
+      "link": "链接"
+    },
+    "syllables": {
+      "pageTitle": "词汇音节",
+      "addDialect": "添加方言",
+      "dialectName": "方言名称",
+      "syllable": "音节",
+      "syllablePlaceholder": "输入音节"
+    },
+    "matching": {
+      "question": "请判断该词汇的对应情况",
+      "tooltip": "完全对应与普遍对应严格界定为：词汇所有音节在声母、韵母以及声调系统层面跨语言的规律性音韵对应，而非表层语音形式的偶然相似。",
+      "full": "完全对应和普遍对应",
+      "partial": "不完全对应或不普遍对应",
+      "fullNote": "*完全对应和普遍对应说明该语言未分化",
+      "relaxedQuestion": "是否存在放宽的普遍对应",
+      "relaxedYes": "是，即在本词项上发生不完全对应的语言仅存在于谱系树的同一分支内，不同分支之间仍能形成完全和普遍对应",
+      "relaxedNo": "否，即在本词项上发生不完全对应的语言不仅存在于谱系树的同一分支内，而且也存在于谱系树的不同分支内",
+      "relaxedNote": "*这个词汇表示该语言已经全分化",
+      "undivided": "未分化",
+      "fullyDivided": "已全分化"
+    },
+    "comparison": {
+      "pageTitle": "词汇比较",
+      "prompt": "请提供对应证据",
+      "addRow": "添加一行",
+      "maxRows": "最多只能添加4个词汇",
+      "word": "词汇",
+      "phonologicalCorrespondence": "音韵对应",
+      "referenceWordPlaceholder": "参考词汇",
+      "features": [
+        "声母",
+        "韵母",
+        "声调"
+      ],
+      "currentCount": "当前词汇数：{count}；最多可再添加 {remaining} 行"
+    },
+    "history": {
+      "pageTitle": "历史层级、可释性与同源性",
+      "selectLevel": "请选择历史层级",
+      "early": "早期",
+      "middle": "中期",
+      "late": "后期",
+      "yes": "是",
+      "no": "否",
+      "explainableWithDonor": "与施借语言可释：",
+      "explainableTooltip": "与施借语言可释，即一个被怀疑是借词的词语，其语音演变过程必须能够用施借语言的语音体系和发展规律来合理解释。",
+      "cognateWithSister": "与近源姐妹语言同源：",
+      "cognateTooltip": "与谱系关系更近的姊妹语言或方言中的词同源",
+      "originType": "词汇类型：",
+      "borrowed": "借词",
+      "native": "固有词",
+      "borrowedNote": "*这个词是借词",
+      "nativeNote": "*这个词是固有词"
+    },
+    "time": {
+      "pageTitle": "时间信息",
+      "borrowSourcePrompt": "请选择这个借词借入的时代以及语言",
+      "oldChinese": "上古汉语",
+      "middleChinese": "中古汉语",
+      "earlyMandarin": "近代汉语",
+      "modernChinese": "现代汉语",
+      "otherLanguage": "其他语言",
+      "fillPlaceholder": "请填写",
+      "changeTypePrompt": "请选择这个借词的语音变化类型",
+      "devoicing": "浊音清化",
+      "labiodentalization": "轻唇音化",
+      "vowelRaisingLowering": "元音高化或低化",
+      "clusterSimplification": "复辅音简化",
+      "other": "其他",
+      "rangePrompt": "请根据文献或者音变时间，填写或调整时间下限和上限",
+      "sentencePrefix": "根据文献或历史记载，",
+      "sentenceParticle": "的",
+      "eventType": {
+        "domestication": "驯化",
+        "use": "使用",
+        "cultivation": "栽培",
+        "introduction": "引进"
+      },
+      "timeIs": "时间是",
+      "yearPlaceholder": "年份",
+      "referenceHintPrefix": "*请点击查看一系列",
+      "referenceLink": "时间信息",
+      "referenceHintSuffix": "作为参考，也可以做更加精确的调整。",
+      "referenceTableTitle": "时间参考表",
+      "referenceTable1": "参考表 1",
+      "referenceTable2": "参考表 2",
+      "loadReferenceFailed": "加载参考表失败，请检查网络连接"
+    },
+    "exports": {
+      "exportedCsv": "已导出 CSV 文件",
+      "divergenceFilename": "分化信息.csv",
+      "allEvidenceFilename": "全部词汇_证据.csv"
+    },
+    "wordOptionsFallback": {
+      "toolMaterials": "工具质料",
+      "crops": "禾谷类作物",
+      "vegetables": "蔬菜",
+      "fruits": "水果",
+      "livestock": "家畜",
+      "foreignCultureConcepts": "外来文化概念"
+    }
+  }
+}

@@ -1,0 +1,357 @@
+{
+  "meta": {
+    "locale": "",
+    "languageName": "",
+    "siteTitle": ""
+  },
+  "common": {
+    "nav": {
+      "home": "",
+      "research": "",
+      "contributors": "",
+      "account": "",
+      "projects": "",
+      "logout": ""
+    },
+    "actions": {
+      "login": "",
+      "register": "",
+      "save": "",
+      "saveInfo": "",
+      "saveDraft": "",
+      "saveAndReturn": "",
+      "back": "",
+      "previous": "",
+      "next": "",
+      "clear": "",
+      "view": "",
+      "edit": "",
+      "delete": "",
+      "remove": "",
+      "publish": "",
+      "unpublish": "",
+      "exportCsv": "",
+      "close": ""
+    },
+    "status": {
+      "loadingFailed": "",
+      "noData": "",
+      "unknownUser": "",
+      "unknownAuthor": "",
+      "untitledProject": "",
+      "networkError": ""
+    },
+    "theme": {
+      "toggle": ""
+    },
+    "pagination": {
+      "page": "",
+      "pageOfTotal": ""
+    }
+  },
+  "auth": {
+    "loginTitle": "",
+    "registerTitle": "",
+    "email": "",
+    "password": "",
+    "username": "",
+    "title": "",
+    "workplace": "",
+    "noAccount": "",
+    "hasAccount": "",
+    "requiredLoginFields": "",
+    "requiredRegisterFields": "",
+    "loginSuccess": "",
+    "loginFailed": "",
+    "loginNetworkFailed": "",
+    "registerFailed": "",
+    "registerNetworkFailed": "",
+    "logoutSuccess": "",
+    "titles": {
+      "professor": "",
+      "doctor": "",
+      "mr": "",
+      "ms": ""
+    }
+  },
+  "home": {
+    "headline": "",
+    "introParagraphs": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "exploreAndContribute": "",
+    "prompt": "",
+    "exploreResearch": "",
+    "contributeResearch": ""
+  },
+  "research": {
+    "mapTitle": "",
+    "timelineAria": "",
+    "timelineHint": "",
+    "projectListTitle": "",
+    "searchPlaceholder": "",
+    "noTimedProjects": "",
+    "noMatchingProjects": "",
+    "loadPublicProjectsFailed": "",
+    "dynasties": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "table": {
+      "projectName": "",
+      "vocabCount": "",
+      "researchTarget": "",
+      "author": "",
+      "updatedAt": "",
+      "actions": ""
+    }
+  },
+  "contributors": {
+    "title": "",
+    "searchPlaceholder": "",
+    "loadFailed": "",
+    "empty": "",
+    "table": {
+      "username": "",
+      "email": "",
+      "workplace": "",
+      "joinedAt": "",
+      "projectCount": "",
+      "vocabCount": "",
+      "actions": ""
+    }
+  },
+  "projects": {
+    "title": "",
+    "welcome": "",
+    "description": "",
+    "myProjects": "",
+    "newProject": "",
+    "empty": "",
+    "loadFailed": "",
+    "deleteConfirm": "",
+    "deleteFailed": "",
+    "deleteSuccess": "",
+    "deleteNetworkFailed": "",
+    "publishFailed": "",
+    "publishSuccess": "",
+    "publishNetworkFailed": "",
+    "unpublishFailed": "",
+    "unpublishSuccess": "",
+    "unpublishNetworkFailed": "",
+    "table": {
+      "projectName": "",
+      "vocabCount": "",
+      "researchTarget": "",
+      "author": "",
+      "createdAt": "",
+      "actions": ""
+    },
+    "projectTypes": {
+      "targetVsOther": "",
+      "multipleTargets": "",
+      "dialects": ""
+    }
+  },
+  "account": {
+    "title": "",
+    "email": "",
+    "username": "",
+    "titleLabel": "",
+    "workplace": "",
+    "optionalPlaceholder": "",
+    "usernameRequired": "",
+    "saveFailed": "",
+    "saveSuccess": ""
+  },
+  "projectEditor": {
+    "newTitle": "",
+    "editTitle": "",
+    "requirementsTitle": "",
+    "requirements": [
+      "",
+      "",
+      "",
+      ""
+    ],
+    "fields": {
+      "projectId": "",
+      "projectName": "",
+      "projectNamePlaceholder": "",
+      "projectDesc": "",
+      "projectDescPlaceholder": "",
+      "projectType": "",
+      "languageList": "",
+      "treeFile": "",
+      "references": "",
+      "referencesPlaceholder": ""
+    },
+    "language": {
+      "add": "",
+      "max": "",
+      "namePlaceholder": "",
+      "longitudePlaceholder": "",
+      "latitudePlaceholder": "",
+      "currentCount": ""
+    },
+    "treeFile": {
+      "missingProjectId": "",
+      "noPreview": "",
+      "popupBlocked": "",
+      "uploadFailed": "",
+      "deleteFailed": ""
+    },
+    "save": {
+      "backendFailed": "",
+      "backendInvalidJson": "",
+      "networkFailed": "",
+      "success": ""
+    }
+  },
+  "vocab": {
+    "pageTitle": "",
+    "addVocab": "",
+    "selectCategoryAndWord": "",
+    "deleteConfirm": "",
+    "deleteSuccess": "",
+    "noVocab": "",
+    "currentWordEmpty": "",
+    "selectWord": "",
+    "customWordPlaceholder": "",
+    "table": {
+      "word": "",
+      "level": "",
+      "fullMatch": "",
+      "partialMatch": "",
+      "relaxedMatch": "",
+      "timeInfo": "",
+      "evidence": "",
+      "recordedAt": "",
+      "actions": "",
+      "link": ""
+    },
+    "syllables": {
+      "pageTitle": "",
+      "addDialect": "",
+      "dialectName": "",
+      "syllable": "",
+      "syllablePlaceholder": ""
+    },
+    "matching": {
+      "question": "",
+      "tooltip": "",
+      "full": "",
+      "partial": "",
+      "fullNote": "",
+      "relaxedQuestion": "",
+      "relaxedYes": "",
+      "relaxedNo": "",
+      "relaxedNote": "",
+      "undivided": "",
+      "fullyDivided": ""
+    },
+    "comparison": {
+      "pageTitle": "",
+      "prompt": "",
+      "addRow": "",
+      "maxRows": "",
+      "word": "",
+      "phonologicalCorrespondence": "",
+      "referenceWordPlaceholder": "",
+      "features": [
+        "",
+        "",
+        ""
+      ],
+      "currentCount": ""
+    },
+    "history": {
+      "pageTitle": "",
+      "selectLevel": "",
+      "early": "",
+      "middle": "",
+      "late": "",
+      "yes": "",
+      "no": "",
+      "explainableWithDonor": "",
+      "explainableTooltip": "",
+      "cognateWithSister": "",
+      "cognateTooltip": "",
+      "originType": "",
+      "borrowed": "",
+      "native": "",
+      "borrowedNote": "",
+      "nativeNote": ""
+    },
+    "time": {
+      "pageTitle": "",
+      "borrowSourcePrompt": "",
+      "oldChinese": "",
+      "middleChinese": "",
+      "earlyMandarin": "",
+      "modernChinese": "",
+      "otherLanguage": "",
+      "fillPlaceholder": "",
+      "changeTypePrompt": "",
+      "devoicing": "",
+      "labiodentalization": "",
+      "vowelRaisingLowering": "",
+      "clusterSimplification": "",
+      "other": "",
+      "rangePrompt": "",
+      "sentencePrefix": "",
+      "sentenceParticle": "",
+      "eventType": {
+        "domestication": "",
+        "use": "",
+        "cultivation": "",
+        "introduction": ""
+      },
+      "timeIs": "",
+      "yearPlaceholder": "",
+      "referenceHintPrefix": "",
+      "referenceLink": "",
+      "referenceHintSuffix": "",
+      "referenceTableTitle": "",
+      "referenceTable1": "",
+      "referenceTable2": "",
+      "loadReferenceFailed": ""
+    },
+    "exports": {
+      "exportedCsv": "",
+      "divergenceFilename": "",
+      "allEvidenceFilename": ""
+    },
+    "wordOptionsFallback": {
+      "toolMaterials": "",
+      "crops": "",
+      "vegetables": "",
+      "fruits": "",
+      "livestock": "",
+      "foreignCultureConcepts": ""
+    }
+  }
+}
