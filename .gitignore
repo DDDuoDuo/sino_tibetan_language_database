@@ -1,5 +1,6 @@
 .DS_Store
 .vscode/
+.commands
 backend/.env
 backend/__pycache__/
 backend/**/__pycache__/
