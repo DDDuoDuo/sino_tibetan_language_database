@@ -17,8 +17,10 @@
         max-width: 500px;
         margin: 100px auto;
         padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background-color: var(--bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px var(--shadow-color);
     }
 
     .account-container h2 {
@@ -36,13 +38,19 @@
         font-weight: bold;
     }
 
-    .account-field input,
+    .account-field input[type="text"],
     .account-field select {
         height: 37.5px;
         width: 100%;
         padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
+        color: var(--text-main);
+        border: 1px solid #cfcfcf;
+        border-radius: 3px;
+    }
+
+    .left-buttons, .right-buttons {
+        display: flex;
+        gap: 16px;
     }
 
     .save-button {
@@ -123,9 +131,11 @@
           <label>工作单位</label>
           <input type="text" id="accWorkplace" placeholder="选填">
         </div>
-    
-        <button class="save-button" onclick="saveAccount()">保存信息</button>
-        <button class="save-button" onclick="goBack()">返回</button>
+        
+        <div class="left-buttons">
+            <button class="save-button" onclick="saveAccount()">保存信息</button>
+            <button class="save-button" onclick="goBack()">返回</button>
+        </div>
     </div>
 
     <div id="authContainer"></div>
