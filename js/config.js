@@ -2,7 +2,7 @@
  * Shared configuration constants.
  * Change API_BASE here to update all pages at once.
  */
-const API_BASE = "http://47.113.104.70:80/api";
+const API_BASE = "/api";
 const AMAP_KEY = "0190baafdb829edc71b1c2b0cb9e3dd0";
 
 window.API_BASE = API_BASE;
