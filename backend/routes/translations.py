@@ -5,8 +5,10 @@ from routes.auth import require_admin
 
 translations_bp = Blueprint("translations", __name__)
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-LOCALES_DIR = os.path.join(BASE_DIR, "locales")
+LOCALES_DIR = os.getenv(
+    "LOCALES_DIR",
+    os.path.join(os.path.dirname(os.path.dirname(__file__)), "locales")
+)
 ALLOWED_LOCALES = {
     "zh-cn": "zh-cn.json",
     "en-us": "en-us.json",
