@@ -5,6 +5,9 @@
 const API_BASE = "http://47.113.104.70:80/api";
 const AMAP_KEY = "0190baafdb829edc71b1c2b0cb9e3dd0";
 
+window.API_BASE = API_BASE;
+window.AMAP_KEY = AMAP_KEY;
+
 /** Read the CSRF token from the cookie set by the backend. */
 function getCSRFToken() {
   const match = document.cookie.match(/(^|;\s*)csrf_token=([^;]*)/);

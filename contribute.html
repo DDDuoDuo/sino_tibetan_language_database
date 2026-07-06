@@ -400,7 +400,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        Auth.init('#userStatus');
+        const authReady = Auth.init('#userStatus');
         Auth.bindProfileName('#userStatus');
     
         const profile = document.getElementById("profile");
@@ -463,8 +463,8 @@
             });
         }
 
-        loadContributors(1);
         document.addEventListener("auth:changed", () => loadContributors(currentPage));
+        Promise.resolve(authReady).finally(() => loadContributors(1));
     });
 </script>
   

@@ -19,7 +19,7 @@ function escHTML(str) {
 }
 
 (function () {
-    const API_ROOT = window.API_BASE || "/api";
+    const API_ROOT = window.API_BASE || (typeof API_BASE !== "undefined" ? API_BASE : "/api");
 
     const STORAGE_KEYS = {
         isLoggedIn: 'isLoggedIn',
@@ -83,7 +83,7 @@ function escHTML(str) {
         init() {
           this.loadAuthUI();
           this.bindEvents();
-          this.restoreSession();
+          return this.restoreSession();
         },
 
         async restoreSession() {
