@@ -9,7 +9,7 @@
 [![Generic badge](https://img.shields.io/badge/Status-Active-success.svg)](http://47.113.104.70/index.html)
 [![Generic badge](https://img.shields.io/badge/Institution-EdUHK-0056b3.svg)](https://www.eduhk.hk/)
 
-[**访问数据库 (Enter Database)**](http://47.113.104.70/index.html)
+[**访问数据库 (Enter Database)**](http://47.113.104.70:8001/index.html)
 
 </div>
 

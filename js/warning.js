@@ -1,6 +1,6 @@
 (function () {
   const MAX_TOASTS = 3;
-  const AUTO_DISMISS_MS = 4000;
+  const AUTO_DISMISS_MS = 1000;
   const STORAGE_KEY = "warning_toasts";
 
   let stackEl = null;

@@ -17,7 +17,7 @@
         </div>
         <div class="site-footer__group">
           <span data-i18n="footer.links">Links</span>
-          <a href="https://www.eduhk.hk/chl/research/research-centres-and-units/the-centre-for-research-on-chinese-language-and-education/" target="_blank" rel="noopener">CULIU</a>
+          <a href="https://www.culiutech.com/" target="_blank" rel="noopener">CULIU</a>
           <a href="https://www.eduhk.hk/" target="_blank" rel="noopener">EdUHK</a>
         </div>
         <div class="site-footer__group">
