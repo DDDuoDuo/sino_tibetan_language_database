@@ -1,88 +1,112 @@
 {
-  "meta": {
-    "locale": "",
-    "languageName": "",
-    "siteTitle": ""
+  "account": {
+    "email": "Email",
+    "optionalPlaceholder": "",
+    "saveFailed": "",
+    "saveSuccess": "",
+    "title": "",
+    "titleLabel": "",
+    "username": "",
+    "usernameRequired": "",
+    "workplace": ""
+  },
+  "auth": {
+    "email": "",
+    "hasAccount": "",
+    "loginFailed": "",
+    "loginNetworkFailed": "",
+    "loginSuccess": "",
+    "loginTitle": "",
+    "logoutSuccess": "",
+    "noAccount": "",
+    "password": "",
+    "registerFailed": "",
+    "registerNetworkFailed": "",
+    "registerTitle": "",
+    "requiredLoginFields": "",
+    "requiredRegisterFields": "",
+    "title": "",
+    "titles": {
+      "doctor": "",
+      "mr": "",
+      "ms": "",
+      "professor": ""
+    },
+    "username": "",
+    "workplace": ""
   },
   "common": {
-    "nav": {
-      "home": "",
-      "research": "",
-      "contributors": "",
-      "account": "",
-      "projects": "",
-      "logout": ""
-    },
     "actions": {
-      "login": "",
-      "register": "",
-      "save": "",
-      "saveInfo": "",
-      "saveDraft": "",
-      "saveAndReturn": "",
       "back": "",
-      "previous": "",
-      "next": "",
       "clear": "",
-      "view": "",
-      "edit": "",
+      "close": "",
       "delete": "",
-      "remove": "",
-      "publish": "",
-      "unpublish": "",
+      "edit": "",
       "exportCsv": "",
-      "close": ""
+      "login": "",
+      "next": "",
+      "previous": "",
+      "publish": "",
+      "register": "",
+      "remove": "",
+      "save": "",
+      "saveAndReturn": "",
+      "saveDraft": "",
+      "saveInfo": "",
+      "unpublish": "",
+      "view": ""
     },
-    "status": {
-      "loadingFailed": "",
-      "noData": "",
-      "unknownUser": "",
-      "unknownAuthor": "",
-      "untitledProject": "",
-      "networkError": ""
-    },
-    "theme": {
-      "toggle": ""
+    "nav": {
+      "account": "My Account",
+      "contributors": "Contributors",
+      "home": "Home",
+      "logout": "Logout",
+      "projects": "My projects",
+      "research": "Researches"
     },
     "pagination": {
       "page": "",
       "pageOfTotal": ""
+    },
+    "status": {
+      "loadingFailed": "",
+      "networkError": "",
+      "noData": "",
+      "unknownAuthor": "",
+      "unknownUser": "",
+      "untitledProject": ""
+    },
+    "theme": {
+      "toggle": ""
     }
+  },
+  "contributors": {
+    "empty": "",
+    "loadFailed": "",
+    "searchPlaceholder": "",
+    "table": {
+      "actions": "",
+      "email": "",
+      "joinedAt": "",
+      "projectCount": "",
+      "username": "",
+      "vocabCount": "",
+      "workplace": ""
+    },
+    "title": ""
   },
   "footer": {
     "contact": "",
-    "links": "",
+    "copyright": "",
     "language": "",
-    "translationEditor": "",
-    "copyright": ""
-  },
-  "auth": {
-    "loginTitle": "",
-    "registerTitle": "",
-    "email": "",
-    "password": "",
-    "username": "",
-    "title": "",
-    "workplace": "",
-    "noAccount": "",
-    "hasAccount": "",
-    "requiredLoginFields": "",
-    "requiredRegisterFields": "",
-    "loginSuccess": "",
-    "loginFailed": "",
-    "loginNetworkFailed": "",
-    "registerFailed": "",
-    "registerNetworkFailed": "",
-    "logoutSuccess": "",
-    "titles": {
-      "professor": "",
-      "doctor": "",
-      "mr": "",
-      "ms": ""
-    }
+    "links": "",
+    "translationEditor": ""
   },
   "home": {
-    "headline": "",
+    "contributeResearch": "Contribute Research",
+    "exploreAndContribute": "Explore and Contribute",
+    "exploreResearch": "Explore Research",
+    "headline": "Sino-Tibetan Language Database",
     "introParagraphs": [
       "",
       "",
@@ -92,20 +116,90 @@
       "",
       ""
     ],
-    "exploreAndContribute": "",
-    "prompt": "",
-    "exploreResearch": "",
-    "contributeResearch": ""
+    "prompt": ""
+  },
+  "meta": {
+    "languageName": "",
+    "locale": "",
+    "siteTitle": ""
+  },
+  "projectEditor": {
+    "editTitle": "",
+    "fields": {
+      "languageList": "",
+      "projectDesc": "",
+      "projectDescPlaceholder": "",
+      "projectId": "",
+      "projectName": "",
+      "projectNamePlaceholder": "",
+      "projectType": "",
+      "references": "",
+      "referencesPlaceholder": "",
+      "treeFile": ""
+    },
+    "language": {
+      "add": "",
+      "currentCount": "",
+      "latitudePlaceholder": "",
+      "longitudePlaceholder": "",
+      "max": "",
+      "namePlaceholder": ""
+    },
+    "newTitle": "",
+    "requirements": [
+      "",
+      "",
+      "",
+      ""
+    ],
+    "requirementsTitle": "",
+    "save": {
+      "backendFailed": "",
+      "backendInvalidJson": "",
+      "networkFailed": "",
+      "success": ""
+    },
+    "treeFile": {
+      "deleteFailed": "",
+      "missingProjectId": "",
+      "noPreview": "",
+      "popupBlocked": "",
+      "uploadFailed": ""
+    }
+  },
+  "projects": {
+    "deleteConfirm": "",
+    "deleteFailed": "",
+    "deleteNetworkFailed": "",
+    "deleteSuccess": "",
+    "description": "",
+    "empty": "",
+    "loadFailed": "",
+    "myProjects": "",
+    "newProject": "",
+    "projectTypes": {
+      "dialects": "",
+      "multipleTargets": "",
+      "targetVsOther": ""
+    },
+    "publishFailed": "",
+    "publishNetworkFailed": "",
+    "publishSuccess": "",
+    "table": {
+      "actions": "",
+      "author": "",
+      "createdAt": "",
+      "projectName": "",
+      "researchTarget": "",
+      "vocabCount": ""
+    },
+    "title": "",
+    "unpublishFailed": "",
+    "unpublishNetworkFailed": "",
+    "unpublishSuccess": "",
+    "welcome": ""
   },
   "research": {
-    "mapTitle": "",
-    "timelineAria": "",
-    "timelineHint": "",
-    "projectListTitle": "",
-    "searchPlaceholder": "",
-    "noTimedProjects": "",
-    "noMatchingProjects": "",
-    "loadPublicProjectsFailed": "",
     "dynasties": [
       "",
       "",
@@ -127,238 +221,144 @@
       "",
       ""
     ],
-    "table": {
-      "projectName": "",
-      "vocabCount": "",
-      "researchTarget": "",
-      "author": "",
-      "updatedAt": "",
-      "actions": ""
-    }
-  },
-  "contributors": {
-    "title": "",
+    "loadPublicProjectsFailed": "",
+    "mapTitle": "",
+    "noMatchingProjects": "",
+    "noTimedProjects": "",
+    "projectListTitle": "",
     "searchPlaceholder": "",
-    "loadFailed": "",
-    "empty": "",
     "table": {
-      "username": "",
-      "email": "",
-      "workplace": "",
-      "joinedAt": "",
-      "projectCount": "",
-      "vocabCount": "",
-      "actions": ""
-    }
-  },
-  "projects": {
-    "title": "",
-    "welcome": "",
-    "description": "",
-    "myProjects": "",
-    "newProject": "",
-    "empty": "",
-    "loadFailed": "",
-    "deleteConfirm": "",
-    "deleteFailed": "",
-    "deleteSuccess": "",
-    "deleteNetworkFailed": "",
-    "publishFailed": "",
-    "publishSuccess": "",
-    "publishNetworkFailed": "",
-    "unpublishFailed": "",
-    "unpublishSuccess": "",
-    "unpublishNetworkFailed": "",
-    "table": {
-      "projectName": "",
-      "vocabCount": "",
-      "researchTarget": "",
+      "actions": "",
       "author": "",
-      "createdAt": "",
-      "actions": ""
-    },
-    "projectTypes": {
-      "targetVsOther": "",
-      "multipleTargets": "",
-      "dialects": ""
-    }
-  },
-  "account": {
-    "title": "",
-    "email": "",
-    "username": "",
-    "titleLabel": "",
-    "workplace": "",
-    "optionalPlaceholder": "",
-    "usernameRequired": "",
-    "saveFailed": "",
-    "saveSuccess": ""
-  },
-  "projectEditor": {
-    "newTitle": "",
-    "editTitle": "",
-    "requirementsTitle": "",
-    "requirements": [
-      "",
-      "",
-      "",
-      ""
-    ],
-    "fields": {
-      "projectId": "",
       "projectName": "",
-      "projectNamePlaceholder": "",
-      "projectDesc": "",
-      "projectDescPlaceholder": "",
-      "projectType": "",
-      "languageList": "",
-      "treeFile": "",
-      "references": "",
-      "referencesPlaceholder": ""
+      "researchTarget": "",
+      "updatedAt": "",
+      "vocabCount": ""
     },
-    "language": {
-      "add": "",
-      "max": "",
-      "namePlaceholder": "",
-      "longitudePlaceholder": "",
-      "latitudePlaceholder": "",
-      "currentCount": ""
-    },
-    "treeFile": {
-      "missingProjectId": "",
-      "noPreview": "",
-      "popupBlocked": "",
-      "uploadFailed": "",
-      "deleteFailed": ""
-    },
-    "save": {
-      "backendFailed": "",
-      "backendInvalidJson": "",
-      "networkFailed": "",
-      "success": ""
-    }
+    "timelineAria": "",
+    "timelineHint": ""
   },
   "vocab": {
-    "pageTitle": "",
     "addVocab": "",
-    "selectCategoryAndWord": "",
-    "deleteConfirm": "",
-    "deleteSuccess": "",
-    "noVocab": "",
-    "currentWordEmpty": "",
-    "selectWord": "",
-    "customWordPlaceholder": "",
-    "table": {
-      "word": "",
-      "level": "",
-      "fullMatch": "",
-      "partialMatch": "",
-      "relaxedMatch": "",
-      "timeInfo": "",
-      "evidence": "",
-      "recordedAt": "",
-      "actions": "",
-      "link": ""
-    },
-    "syllables": {
-      "pageTitle": "",
-      "addDialect": "",
-      "dialectName": "",
-      "syllable": "",
-      "syllablePlaceholder": ""
-    },
-    "matching": {
-      "question": "",
-      "tooltip": "",
-      "full": "",
-      "partial": "",
-      "fullNote": "",
-      "relaxedQuestion": "",
-      "relaxedYes": "",
-      "relaxedNo": "",
-      "relaxedNote": "",
-      "undivided": "",
-      "fullyDivided": ""
-    },
     "comparison": {
-      "pageTitle": "",
-      "prompt": "",
       "addRow": "",
-      "maxRows": "",
-      "word": "",
-      "phonologicalCorrespondence": "",
-      "referenceWordPlaceholder": "",
+      "currentCount": "",
       "features": [
         "",
         "",
         ""
       ],
-      "currentCount": ""
+      "maxRows": "",
+      "pageTitle": "",
+      "phonologicalCorrespondence": "",
+      "prompt": "",
+      "referenceWordPlaceholder": "",
+      "word": ""
+    },
+    "currentWordEmpty": "",
+    "customWordPlaceholder": "",
+    "deleteConfirm": "",
+    "deleteSuccess": "",
+    "exports": {
+      "allEvidenceFilename": "",
+      "divergenceFilename": "",
+      "exportedCsv": ""
     },
     "history": {
+      "borrowed": "",
+      "borrowedNote": "",
+      "cognateTooltip": "",
+      "cognateWithSister": "",
+      "early": "",
+      "explainableTooltip": "",
+      "explainableWithDonor": "",
+      "late": "",
+      "middle": "",
+      "native": "",
+      "nativeNote": "",
+      "no": "",
+      "originType": "",
       "pageTitle": "",
       "selectLevel": "",
-      "early": "",
-      "middle": "",
-      "late": "",
-      "yes": "",
-      "no": "",
-      "explainableWithDonor": "",
-      "explainableTooltip": "",
-      "cognateWithSister": "",
-      "cognateTooltip": "",
-      "originType": "",
-      "borrowed": "",
-      "native": "",
-      "borrowedNote": "",
-      "nativeNote": ""
+      "yes": ""
+    },
+    "matching": {
+      "full": "",
+      "fullNote": "",
+      "fullyDivided": "",
+      "partial": "",
+      "question": "",
+      "relaxedNo": "",
+      "relaxedNote": "",
+      "relaxedQuestion": "",
+      "relaxedYes": "",
+      "tooltip": "",
+      "undivided": ""
+    },
+    "noVocab": "",
+    "pageTitle": "",
+    "selectCategoryAndWord": "",
+    "selectWord": "",
+    "syllables": {
+      "addDialect": "",
+      "dialectName": "",
+      "pageTitle": "",
+      "syllable": "",
+      "syllablePlaceholder": ""
+    },
+    "table": {
+      "actions": "",
+      "evidence": "",
+      "fullMatch": "",
+      "level": "",
+      "link": "",
+      "partialMatch": "",
+      "recordedAt": "",
+      "relaxedMatch": "",
+      "timeInfo": "",
+      "word": ""
     },
     "time": {
-      "pageTitle": "",
       "borrowSourcePrompt": "",
-      "oldChinese": "",
-      "middleChinese": "",
-      "earlyMandarin": "",
-      "modernChinese": "",
-      "otherLanguage": "",
-      "fillPlaceholder": "",
       "changeTypePrompt": "",
-      "devoicing": "",
-      "labiodentalization": "",
-      "vowelRaisingLowering": "",
       "clusterSimplification": "",
-      "other": "",
-      "rangePrompt": "",
-      "sentencePrefix": "",
-      "sentenceParticle": "",
+      "devoicing": "",
+      "earlyMandarin": "",
       "eventType": {
-        "domestication": "",
-        "use": "",
         "cultivation": "",
-        "introduction": ""
+        "domestication": "",
+        "introduction": "",
+        "use": ""
       },
-      "timeIs": "",
-      "yearPlaceholder": "",
+      "fillPlaceholder": "",
+      "labiodentalization": "",
+      "loadReferenceFailed": "",
+      "middleChinese": "",
+      "modernChinese": "",
+      "oldChinese": "",
+      "other": "",
+      "otherLanguage": "",
+      "pageTitle": "",
+      "rangePrompt": "",
       "referenceHintPrefix": "",
-      "referenceLink": "",
       "referenceHintSuffix": "",
-      "referenceTableTitle": "",
+      "referenceLink": "",
       "referenceTable1": "",
       "referenceTable2": "",
-      "loadReferenceFailed": ""
-    },
-    "exports": {
-      "exportedCsv": "",
-      "divergenceFilename": "",
-      "allEvidenceFilename": ""
+      "referenceTableTitle": "",
+      "sentenceParticle": "",
+      "sentencePrefix": "",
+      "timeIs": "",
+      "vowelRaisingLowering": "",
+      "yearPlaceholder": ""
     },
     "wordOptionsFallback": {
-      "toolMaterials": "",
       "crops": "",
-      "vegetables": "",
+      "foreignCultureConcepts": "",
       "fruits": "",
       "livestock": "",
-      "foreignCultureConcepts": ""
+      "toolMaterials": "",
+      "vegetables": ""
     }
   }
 }

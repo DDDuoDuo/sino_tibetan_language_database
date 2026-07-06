@@ -115,6 +115,9 @@
 
   function pop_up(message, type) {
       if (!message) return;
+      if (window.I18N && typeof I18N.translateLiteral === "function") {
+        message = I18N.translateLiteral(message);
+      }
   
       const stack = ensureStack();
       if (!stack) return;
