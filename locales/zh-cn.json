@@ -49,6 +49,13 @@
       "pageOfTotal": "第 {page} 页 / 共 {totalPages} 页"
     }
   },
+  "footer": {
+    "contact": "联系方式",
+    "links": "相关链接",
+    "language": "语言",
+    "translationEditor": "翻译编辑器",
+    "copyright": "© 香港教育大学。保留所有权利。"
+  },
   "auth": {
     "loginTitle": "登录",
     "registerTitle": "注册",

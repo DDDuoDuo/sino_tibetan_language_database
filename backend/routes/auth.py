@@ -6,6 +6,7 @@ from models.users import (
     create_user, get_user_by_email, get_user_by_id,
     update_user_profile, list_contributors,
     verify_password, hash_password, update_user_password_hash,
+    update_user_account_type,
 )
 
 auth_bp = Blueprint("auth", __name__)
@@ -60,6 +61,25 @@ def require_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+def require_admin(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get(COOKIE_NAME)
+        if not token:
+            return jsonify({"success": False, "message": "未登录"}), 401
+        user_id = _read_token(token)
+        if not user_id:
+            return jsonify({"success": False, "message": "登录已过期"}), 401
+        user = get_user_by_id(user_id)
+        if not user:
+            return jsonify({"success": False, "message": "用户不存在"}), 401
+        if user.get("account_type") != "admin":
+            return jsonify({"success": False, "message": "需要管理员权限"}), 403
+        request.current_user_id = user_id
+        request.current_user = user
+        return f(*args, **kwargs)
+    return decorated
+
 def serialize_user(user_row):
     if not user_row:
         return None
@@ -69,6 +89,7 @@ def serialize_user(user_row):
         "username": user_row["username"],
         "title": user_row.get("title"),
         "workplace": user_row.get("workplace"),
+        "accountType": user_row.get("account_type") or "user",
         "created_at": (
             user_row["created_at"].isoformat()
             if user_row.get("created_at") is not None
@@ -78,7 +99,7 @@ def serialize_user(user_row):
 
 @auth_bp.post("/register")
 def register():
-    data = request.get_json()
+    data = request.get_json() or {}
 
     email = data.get("email", "").strip()
     username = data.get("username", "").strip()
@@ -104,7 +125,7 @@ def register():
 
 @auth_bp.post("/login")
 def login():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get("email", "").strip()
     password = data.get("password", "").strip()
 
@@ -131,7 +152,7 @@ def login():
 @auth_bp.post("/profile")
 @require_auth
 def update_profile():
-    data = request.get_json()
+    data = request.get_json() or {}
 
     user_id = request.current_user_id
     username = (data.get("username") or "").strip()
@@ -147,12 +168,7 @@ def update_profile():
     if not updated:
         return jsonify({"success": False, "message": "用户不存在"}), 404
 
-    updated = dict(updated)
-    updated.pop("password", None)
-    if "created_at" in updated and hasattr(updated["created_at"], "isoformat"):
-        updated["created_at"] = updated["created_at"].isoformat()
-
-    return jsonify({"success": True, "user": updated})
+    return jsonify({"success": True, "user": serialize_user(updated)})
 
 @auth_bp.get("/me")
 def me():
@@ -199,6 +215,7 @@ def get_contributors():
             "id": r.get("id"),
             "username": r.get("username"),
             "workplace": r.get("workplace"),
+            "accountType": r.get("account_type") or "user",
             "createdAt": dt(r.get("created_at")),
             "projectCount": int(r.get("project_count") or 0),
             "vocabCount": int(r.get("vocab_count") or 0),
@@ -211,6 +228,21 @@ def get_contributors():
         "perPage": per_page,
         "total": total
     })
+
+@auth_bp.post("/contributors/<user_id>/account-type")
+@require_admin
+def set_contributor_account_type(user_id):
+    data = request.get_json() or {}
+    account_type = (data.get("accountType") or "").strip()
+    if account_type not in ("user", "admin"):
+        return jsonify({"success": False, "message": "无效账户类型"}), 400
+    if user_id == request.current_user_id and account_type != "admin":
+        return jsonify({"success": False, "message": "不能取消自己的管理员权限"}), 400
+
+    updated = update_user_account_type(user_id, account_type)
+    if not updated:
+        return jsonify({"success": False, "message": "用户不存在"}), 404
+    return jsonify({"success": True, "user": serialize_user(updated)})
 
 @auth_bp.post("/logout")
 def logout():

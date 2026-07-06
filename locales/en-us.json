@@ -49,6 +49,13 @@
       "pageOfTotal": ""
     }
   },
+  "footer": {
+    "contact": "",
+    "links": "",
+    "language": "",
+    "translationEditor": "",
+    "copyright": ""
+  },
   "auth": {
     "loginTitle": "",
     "registerTitle": "",

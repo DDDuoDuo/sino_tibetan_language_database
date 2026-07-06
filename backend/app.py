@@ -12,6 +12,7 @@ from routes.auth import auth_bp
 from routes.projects import projects_bp
 from routes.vocab import vocab_bp
 from routes.languages import languages_bp
+from routes.translations import translations_bp
 
 CSRF_COOKIE = "csrf_token"
 CSRF_HEADER = "X-CSRF-Token"
@@ -69,6 +70,7 @@ def create_app():
     app.register_blueprint(projects_bp, url_prefix="/api")
     app.register_blueprint(vocab_bp, url_prefix="/api")
     app.register_blueprint(languages_bp, url_prefix="/api")
+    app.register_blueprint(translations_bp, url_prefix="/api")
 
     @app.get("/api/health")
     def health():

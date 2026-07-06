@@ -22,8 +22,8 @@ def create_user(email: str, username: str, password_plain: str,
     try:
         with conn.cursor() as cursor:
             sql = """
-                INSERT INTO users (id, email, username, password, title, workplace)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO users (id, email, username, password, title, workplace, account_type)
+                VALUES (%s, %s, %s, %s, %s, %s, 'user')
             """
             cursor.execute(sql, (
                 user_id, email, username, pw_hash, title, workplace
@@ -43,6 +43,7 @@ def create_user(email: str, username: str, password_plain: str,
             "username": username,
             "title": title,
             "workplace": workplace,
+            "account_type": "user",
             "created_at": created_at,
         }
     finally:
@@ -97,6 +98,21 @@ def update_user_profile(user_id: str, username: str, title: str, workplace: str)
     finally:
         conn.close()
 
+def update_user_account_type(user_id: str, account_type: str) -> Optional[Dict]:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "UPDATE users SET account_type=%s WHERE id=%s",
+                (account_type, user_id),
+            )
+            conn.commit()
+
+            cursor.execute("SELECT * FROM users WHERE id=%s", (user_id,))
+            return cursor.fetchone()
+    finally:
+        conn.close()
+
 def list_contributors(page: int = 1, per_page: int = 10):
     conn = get_connection()
     try:
@@ -110,6 +126,7 @@ def list_contributors(page: int = 1, per_page: int = 10):
                     u.username,
                     u.email,
                     u.workplace,
+                    u.account_type,
                     u.created_at,
                     COUNT(p.id) AS project_count,
                     COALESCE(SUM(p.num_vocab), 0) AS vocab_count

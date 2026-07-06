@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="css/global.css?v=20251214">
+  <script src="js/config.js?v=20251214"></script>
+  <script src="js/auth.js?v=20251214"></script>
+  <script src="js/warning.js?v=20251214"></script>
+  <script src="js/i18n.js?v=20251214"></script>
+  <script src="js/theme.js?v=20251214"></script>
+  <script src="js/footer.js?v=20251214"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>翻译编辑器</title>
+  <style>
+    .editor-shell {
+      max-width: 1100px;
+      margin: 50px auto 80px;
+      padding: 0 20px;
+    }
+
+    .editor-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 24px;
+      background: var(--navy-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .editor-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .editor-toolbar select,
+    .editor-toolbar button {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-color);
+      color: var(--text-main);
+    }
+
+    .editor-toolbar button {
+      cursor: pointer;
+      background: var(--primary-blue);
+      color: #fff;
+      border-color: var(--primary-blue);
+    }
+
+    #translationJson {
+      width: 100%;
+      min-height: 62vh;
+      box-sizing: border-box;
+      padding: 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-color);
+      color: var(--text-main);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      resize: vertical;
+    }
+
+    .editor-note {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img id="logo" src="img/EdUHK_logo.png" alt="香港教育大学 Logo">
+    </div>
+
+    <div class="menu">
+      <nav>
+        <ul>
+          <li><a href="index.html">首页</a></li>
+          <li><a href="language_map.html">研究</a></li>
+          <li><a href="contribute.html">贡献者</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="header-right">
+      <button id="themeToggle" class="theme-toggle-btn" title="切换主题">
+        <img id="themeIconImg" src="img/theme.png" alt="Theme">
+      </button>
+      <div class="profile" id="profile">
+        <img id="profileImg" src="img/profile.png" alt="头像">
+        <span class="profile-name" id="userStatus">登录</span>
+      </div>
+    </div>
+
+    <div id="dropdownMenu" class="dropdown-menu" style="display: none;">
+      <a href="account.html">我的账户</a>
+      <a href="projects.html">管理项目</a>
+      <button class="dropdown-link" id="logoutBtn">退出登录</button>
+    </div>
+  </header>
+
+  <main class="editor-shell">
+    <h1 class="editor-title">翻译编辑器</h1>
+    <p class="editor-note">只有管理员可以保存翻译。请保持 JSON 格式有效；保存前系统会自动检查。</p>
+    <div class="editor-toolbar">
+      <label for="localeSelect">文件</label>
+      <select id="localeSelect">
+        <option value="zh-cn">zh-cn.json</option>
+        <option value="en-us">en-us.json</option>
+      </select>
+      <button type="button" id="reloadBtn">重新加载</button>
+      <button type="button" id="saveBtn">保存</button>
+    </div>
+    <textarea id="translationJson" spellcheck="false"></textarea>
+  </main>
+
+  <div id="authContainer"></div>
+
+  <script>
+    function bindHeader() {
+      Auth.init('#userStatus');
+      Auth.bindProfileName('#userStatus');
+
+      const profile = document.getElementById("profile");
+      const dropdown = document.getElementById("dropdownMenu");
+      if (profile && dropdown) {
+        profile.addEventListener("click", () => {
+          if (Auth.isLoggedIn()) {
+            dropdown.style.display = (dropdown.style.display === "none" || !dropdown.style.display) ? "block" : "none";
+          } else {
+            Auth.showLogin();
+          }
+        });
+        document.addEventListener("click", (e) => {
+          if (!profile.contains(e.target) && !dropdown.contains(e.target)) dropdown.style.display = "none";
+        });
+      }
+
+      document.getElementById("logoutBtn")?.addEventListener("click", () => {
+        Auth.logout();
+        setTimeout(() => window.location.href = "index.html?logout=true", 100);
+      });
+    }
+
+    async function ensureAdmin() {
+      await Auth.restoreSession();
+      if (!Auth.isLoggedIn()) {
+        window.location.href = "index.html?login=true";
+        return false;
+      }
+      if (!Auth.isAdmin()) {
+        pop_up("需要管理员权限", "r");
+        setTimeout(() => window.location.href = "index.html", 800);
+        return false;
+      }
+      return true;
+    }
+
+    async function loadTranslation() {
+      const locale = document.getElementById("localeSelect").value;
+      const resp = await fetch(`${API_BASE}/translations/${encodeURIComponent(locale)}`, { credentials: "include" });
+      const data = await resp.json();
+      if (!resp.ok || !data.success) {
+        pop_up(data.message || "加载翻译文件失败", "r");
+        return;
+      }
+      document.getElementById("translationJson").value = JSON.stringify(data.data, null, 2);
+    }
+
+    async function saveTranslation() {
+      const locale = document.getElementById("localeSelect").value;
+      let parsed;
+      try {
+        parsed = JSON.parse(document.getElementById("translationJson").value);
+      } catch (err) {
+        pop_up("JSON 格式无效，请修正后再保存", "r");
+        return;
+      }
+
+      const resp = await apiFetch(`${API_BASE}/translations/${encodeURIComponent(locale)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed)
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.success) {
+        pop_up(data.message || "保存翻译文件失败", "r");
+        return;
+      }
+      pop_up("翻译文件已保存", "g");
+      if (locale === I18N.locale) await I18N.loadLocale(locale);
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      bindHeader();
+      if (await ensureAdmin()) await loadTranslation();
+      document.getElementById("localeSelect").addEventListener("change", loadTranslation);
+      document.getElementById("reloadBtn").addEventListener("click", loadTranslation);
+      document.getElementById("saveBtn").addEventListener("click", saveTranslation);
+    });
+  </script>
+</body>
+</html>

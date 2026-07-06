@@ -1,9 +1,14 @@
+<!DOCTYPE html>
 <html lang="zh">
 <head>
+  <meta charset="UTF-8">
   <link rel="stylesheet" href="css/global.css?v=20251214">
+  <script src="js/config.js?v=20251214"></script>
   <script src="js/auth.js?v=20251214"></script>
   <script src="js/warning.js?v=20251214"></script>
-  <meta charset="UTF-8">
+  <script src="js/i18n.js?v=20251214"></script>
+  <script src="js/theme.js?v=20251214"></script>
+  <script src="js/footer.js?v=20251214"></script>
   <title>汉藏语分化时间数据库</title>
   <style>
     body {
@@ -214,6 +219,7 @@
                     <th>用户名</th>
                     <th>邮箱</th>
                     <th>工作单位</th>
+                    <th>账户类型</th>
                     <th>加入时间</th>
                     <th>项目数量</th>
                     <th>词汇数量</th>
@@ -234,8 +240,6 @@
 </body>
 
 <script>
-    const API_BASE = "/api";
-
     const themeToggleBtn = document.getElementById('themeToggle');
     const moonIcon = document.getElementById('moonIcon');
     const sunIcon = document.getElementById('sunIcon');
@@ -299,7 +303,7 @@
                 const text = await resp.text();
                 console.error("加载贡献者失败:", resp.status, text);
                 pop_up("加载贡献者失败，请检查网络连接", "r");
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">加载失败</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">加载失败</td></tr>`;
                 return;
             }
 
@@ -315,7 +319,7 @@
             currentPage = Number(data.page || page);
 
             if (!filtered.length) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #888;">暂无贡献者</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: #888;">暂无贡献者</td></tr>`;
                 pageIndicator.textContent = `第 ${currentPage} 页`;
                 prevBtn.disabled = currentPage <= 1;
                 nextBtn.disabled = true;
@@ -328,26 +332,56 @@
                 const createdAt = u.createdAt || "--";
                 const projectCount = u.projectCount ?? 0;
                 const vocabCount = u.vocabCount ?? 0;
+                const accountType = u.accountType === "admin" ? "管理员" : "普通用户";
+                const isTargetAdmin = u.accountType === "admin";
+                const adminAction = Auth.isAdmin()
+                    ? `<button type="button" class="view-btn account-type-btn" data-id="${escHTML(u.id)}" data-next="${isTargetAdmin ? "user" : "admin"}">${isTargetAdmin ? "取消管理员" : "设为管理员"}</button>`
+                    : "";
 
-                const action = `<button type="button" class="view-btn" data-user="${u.username}">查看</button>`;
+                const action = `<button type="button" class="view-btn contributor-view-btn" data-user="${escHTML(u.username)}">查看</button>${adminAction}`;
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td>${u.username || "--"}</td>
-                    <td>${u.email || "--"}</td>
-                    <td>${workplace}</td>
-                    <td>${createdAt}</td>
-                    <td>${projectCount}</td>
-                    <td>${vocabCount}</td>
+                    <td>${escHTML(u.username || "--")}</td>
+                    <td>${escHTML(u.email || "--")}</td>
+                    <td>${escHTML(workplace)}</td>
+                    <td>${accountType}</td>
+                    <td>${escHTML(createdAt)}</td>
+                    <td>${escHTML(projectCount)}</td>
+                    <td>${escHTML(vocabCount)}</td>
                     <td>${action}</td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            tbody.querySelectorAll(".view-btn").forEach(btn => {
+            tbody.querySelectorAll(".contributor-view-btn").forEach(btn => {
                 btn.addEventListener("click", () => {
                     const user = btn.getAttribute("data-user");
                     window.location.href = `language_map.html?author=${encodeURIComponent(user)}`;
+                });
+            });
+
+            tbody.querySelectorAll(".account-type-btn").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    const userId = btn.getAttribute("data-id");
+                    const next = btn.getAttribute("data-next");
+                    try {
+                        const resp = await apiFetch(`${API_BASE}/contributors/${encodeURIComponent(userId)}/account-type`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ accountType: next })
+                        });
+                        const data = await resp.json();
+                        if (!resp.ok || !data.success) {
+                            pop_up(data.message || "设置账户类型失败", "r");
+                            return;
+                        }
+                        pop_up("账户类型已更新", "g");
+                        loadContributors(currentPage);
+                    } catch (err) {
+                        console.error("设置账户类型出错:", err);
+                        pop_up("设置账户类型失败，请检查网络连接", "r");
+                    }
                 });
             });
 
@@ -361,7 +395,7 @@
         } catch (err) {
             console.error("加载贡献者出错:", err);
             pop_up("加载贡献者失败，请检查网络连接", "r");
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #888;">加载失败</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: #888;">加载失败</td></tr>`;
         }
     }
 
@@ -430,6 +464,7 @@
         }
 
         loadContributors(1);
+        document.addEventListener("auth:changed", () => loadContributors(currentPage));
     });
 </script>
   

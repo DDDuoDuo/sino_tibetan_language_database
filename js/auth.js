@@ -8,8 +8,18 @@ function closeAuthModal() {
     if (m) m.classList.add('hidden');
 }
 
+function escHTML(str) {
+    if (str == null) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
 (function () {
-    const API_BASE = "/api";
+    const API_ROOT = window.API_BASE || "/api";
 
     const STORAGE_KEYS = {
         isLoggedIn: 'isLoggedIn',
@@ -27,6 +37,7 @@ function closeAuthModal() {
         if (userObj) sessionStorage.setItem(STORAGE_KEYS.currentUser, JSON.stringify(userObj));
 
         notifyProfileChanged();
+        document.dispatchEvent(new CustomEvent("auth:changed", { detail: { user: userObj } }));
     }
 
 
@@ -40,6 +51,7 @@ function closeAuthModal() {
         sessionStorage.removeItem(STORAGE_KEYS.currentUser);
 
         notifyProfileChanged();
+        document.dispatchEvent(new CustomEvent("auth:changed", { detail: { user: null } }));
     }
 
     function isLoggedIn() {
@@ -63,7 +75,7 @@ function closeAuthModal() {
         const logged = isLoggedIn();
         profileTargets.forEach(el => {
             if (!el) return;
-            el.textContent = logged && u ? u : '登录';
+            el.textContent = logged && u ? u : (window.I18N ? I18N.t("common.actions.login", "登录") : "登录");
         });
     }
 
@@ -84,7 +96,7 @@ function closeAuthModal() {
             }
 
             try {
-                const resp = await fetch(`${API_BASE}/me`, { credentials: "include" });
+                const resp = await fetch(`${API_ROOT}/me`, { credentials: "include" });
                 if (!resp.ok) return;
                 const data = await resp.json();
                 if (data && data.success && data.user) {
@@ -95,6 +107,7 @@ function closeAuthModal() {
                     username: u.username,
                     title: u.title || "教授",
                     workplace: u.workplace || "",
+                    accountType: u.accountType || "user",
                     created_at: u.created_at || null,
                 };
                 setLogin(userObj.username, userObj);
@@ -258,10 +271,9 @@ function closeAuthModal() {
             }
 
             try {
-                const resp = await fetch(`${API_BASE}/login`, {
+                const resp = await apiFetch(`${API_ROOT}/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    credentials: "include",
                     body: JSON.stringify({ email, password })
                 });
 
@@ -279,6 +291,7 @@ function closeAuthModal() {
                     username: u.username,
                     title: u.title || "教授",
                     workplace: u.workplace || "",
+                    accountType: u.accountType || "user",
                     created_at: u.created_at || null,
                 };
 
@@ -308,10 +321,9 @@ function closeAuthModal() {
             }
 
             try {
-                const resp = await fetch(`${API_BASE}/register`, {
+                const resp = await apiFetch(`${API_ROOT}/register`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    credentials: "include",
                     body: JSON.stringify({ email, username, password, title, workplace })
                 });
 
@@ -329,6 +341,7 @@ function closeAuthModal() {
                     username: u.username,
                     title: u.title || "教授",
                     workplace: u.workplace || "",
+                    accountType: u.accountType || "user",
                     created_at: u.created_at || null,
                 };
 
@@ -343,9 +356,8 @@ function closeAuthModal() {
         
         async logout() {
             try {
-                await fetch(`${API_BASE}/logout`, {
+                await apiFetch(`${API_ROOT}/logout`, {
                 method: "POST",
-                credentials: "include",
                 });
             } catch (e) {
                 console.warn("logout request failed:", e);
@@ -363,11 +375,15 @@ function closeAuthModal() {
                 sessionStorage.getItem(STORAGE_KEYS.currentUser);
             return raw ? JSON.parse(raw) : null;
         },
+
+        isAdmin() {
+            return this.getCurrentUser()?.accountType === "admin";
+        },
         
         bindProfileName(selector) {
             const user = this.getCurrentUser();
             const span = document.querySelector(selector);
-            if (span) span.textContent = user ? user.username : "登录";
+            if (span) span.textContent = user ? user.username : (window.I18N ? I18N.t("common.actions.login", "登录") : "登录");
         },
         
         requireLogin(callback) {

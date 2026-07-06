@@ -1,11 +1,14 @@
+<!DOCTYPE html>
 <html lang="zh">
 <head>
+  <meta charset="UTF-8">
   <link rel="stylesheet" href="css/global.css?v=20251214">
   <script src="js/config.js?v=20251214"></script>
   <script src="js/auth.js?v=20251214"></script>
   <script src="js/warning.js?v=20251214"></script>
+  <script src="js/i18n.js?v=20251214"></script>
   <script src="js/theme.js?v=20251214"></script>
-  <meta charset="UTF-8">
+  <script src="js/footer.js?v=20251214"></script>
   <title>汉藏语分化时间数据库</title>
   <style>
     body {
@@ -44,6 +47,7 @@
         width: 100%;
         padding: 8px;
         color: var(--text-main);
+        background-color: var(--border-color);
         border: 1px solid #cfcfcf;
         border-radius: 3px;
     }
@@ -131,6 +135,11 @@
           <label>工作单位</label>
           <input type="text" id="accWorkplace" placeholder="选填">
         </div>
+
+        <div class="account-field">
+          <label>账户类型</label>
+          <input type="text" id="accAccountType" readonly>
+        </div>
         
         <div class="left-buttons">
             <button class="save-button" onclick="saveAccount()">保存信息</button>
@@ -183,10 +192,8 @@
         if (logo) logo.src = "img/EdUHK_logo.png"; 
     }
 
-    const AUTH_API_BASE = "/api";
-
     function loadAccount() {
-        const user = JSON.parse(sessionStorage.getItem("currentUser"));
+        const user = Auth.getCurrentUser() || JSON.parse(sessionStorage.getItem("currentUser") || "null");
         if (!user) {
             window.location.href = "index.html?login=true";
             return;
@@ -196,10 +203,11 @@
         document.getElementById("accUsername").value = user.username || "";
         document.getElementById("accTitle").value = user.title || "教授";
         document.getElementById("accWorkplace").value = user.workplace || "";
+        document.getElementById("accAccountType").value = user.accountType === "admin" ? "管理员" : "普通用户";
     }
 
     async function saveAccount() {
-        const user = JSON.parse(sessionStorage.getItem("currentUser"));
+        const user = Auth.getCurrentUser() || JSON.parse(sessionStorage.getItem("currentUser") || "null");
         if (!user) return;
 
         const newUsername = document.getElementById("accUsername").value.trim();
@@ -212,7 +220,7 @@
         }
 
         try {
-            const resp = await fetch(`${AUTH_API_BASE}/profile`, {
+            const resp = await apiFetch(`${API_BASE}/profile`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -237,12 +245,14 @@
                 username: u.username ?? newUsername,
                 title: u.title ?? newTitle,
                 workplace: u.workplace ?? newWorkplace,
+                accountType: u.accountType ?? user.accountType ?? "user",
                 created_at: u.created_at ?? user.created_at,
                 email: u.email ?? user.email,
                 id: u.id ?? user.id,
             };
 
             sessionStorage.setItem("currentUser", JSON.stringify(merged));
+            localStorage.setItem("currentUser", JSON.stringify(merged));
 
             const span = document.querySelector("#userStatus");
             if (span) span.textContent = merged.username || "登录";
@@ -302,6 +312,7 @@
         }
 
         loadAccount();
+        document.addEventListener("auth:changed", loadAccount);
     });
 </script>
   
