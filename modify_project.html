@@ -2281,6 +2281,11 @@
       const removeTreeFile = document.getElementById("removeTreeFile");
       const treeFileActions = document.getElementById("treeFileActions");
 
+      function setTreeFileUi(hasTreeFile) {
+        treeFileInput.style.display = hasTreeFile ? "none" : "";
+        treeFileActions.style.display = hasTreeFile ? "flex" : "none";
+      }
+
       (async () => {
         const existing = await fetchProjectFromBackend(projectId);
         window.currentProject = existing || null;
@@ -2321,9 +2326,9 @@
           }
 
           if (existing.hasTreeFile && !isTreeFileRemoved) {
-            treeFileActions.style.display = "flex";
+            setTreeFileUi(true);
           } else {
-            treeFileActions.style.display = "none";
+            setTreeFileUi(false);
           }
 
           if (existing.languageCoords && Array.isArray(existing.languageCoords) && existing.languageCoords.length) {
@@ -2352,7 +2357,7 @@
           addLanguageInput();
           vocabData = [];
           loadVocabList();
-          treeFileActions.style.display = "none";
+          setTreeFileUi(false);
         }
       })();
 
@@ -2418,7 +2423,7 @@
         window.currentTreeDataURL = null;
         window.currentTreeFileName = file.name;
         isTreeFileRemoved = false;
-        treeFileActions.style.display = "flex";
+        setTreeFileUi(true);
       });
 
       removeTreeFile.addEventListener("click", () => {
@@ -2429,7 +2434,7 @@
         window.tempTreeFile = null;
         window.currentTreeDataURL = null;
         window.currentTreeFileName = null;
-        treeFileActions.style.display = "none";
+        setTreeFileUi(false);
         isTreeFileRemoved = true;
       });
 
@@ -3000,6 +3005,7 @@
                     window.tempTreeFile = null;
                     window.currentTreeFileName = null;
                     isTreeFileRemoved = false;
+                    setTreeFileUi(true);
                   }
                 } catch (err) {
                   console.error("调用树图文件上传接口出错:", err);
@@ -3017,6 +3023,7 @@
                   } else {
                     savedHasTreeFile = false;
                     isTreeFileRemoved = false;
+                    setTreeFileUi(false);
                   }
                 } catch (err) {
                   console.error("调用树图文件删除接口出错:", err);

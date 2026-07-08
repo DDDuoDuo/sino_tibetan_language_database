@@ -2,6 +2,7 @@ import os
 import uuid
 from db import get_connection
 from typing import Optional, Dict
+from werkzeug.utils import secure_filename
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "treefiles")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -10,8 +11,12 @@ def _save_file_to_disk(file_storage, project_id: str) -> tuple:
     """Save an uploaded file to disk. Returns (file_name, stored_name, mime_type)."""
     original_name = file_storage.filename or "treefile"
     mime_type = file_storage.content_type or "application/octet-stream"
-    ext = os.path.splitext(original_name)[1] or ""
-    stored_name = f"{project_id}_{uuid.uuid4().hex[:8]}{ext}"
+    stored_name = secure_filename(original_name) or f"treefile_{uuid.uuid4().hex[:8]}"
+    base, ext = os.path.splitext(stored_name)
+
+    if os.path.exists(os.path.join(UPLOAD_DIR, stored_name)):
+        stored_name = f"{base}_{uuid.uuid4().hex[:8]}{ext}"
+
     path = os.path.join(UPLOAD_DIR, stored_name)
     file_storage.save(path)
     return original_name, stored_name, mime_type
