@@ -145,10 +145,26 @@
       "username": "用户名",
       "email": "邮箱",
       "workplace": "工作单位",
+      "accountType": "账户类型",
       "joinedAt": "加入时间",
       "projectCount": "项目数量",
       "vocabCount": "词汇数量",
       "actions": "操作"
+    },
+    "accountTypes": {
+      "admin": "管理员",
+      "user": "普通用户"
+    },
+    "actions": {
+      "setAdmin": "设为管理员",
+      "unsetAdmin": "取消管理员"
+    },
+    "messages": {
+      "loadGenericFailed": "加载失败",
+      "updateConfirm": "确定要修改此用户的帐户类型？",
+      "updateFailed": "设置账户类型失败",
+      "updateNetworkFailed": "设置账户类型失败，请检查网络连接",
+      "updateSuccess": "账户类型已更新"
     }
   },
   "projects": {
@@ -189,6 +205,7 @@
     "username": "用户名",
     "titleLabel": "称谓",
     "workplace": "工作单位",
+    "accountType": "账户类型",
     "optionalPlaceholder": "选填",
     "usernameRequired": "用户名不能为空",
     "saveFailed": "保存失败，请检查网络连接",
@@ -225,11 +242,13 @@
       "currentCount": "当前语言数：{count}；最多可再添加 {remaining} 行"
     },
     "treeFile": {
+      "uploadedGeneric": "已上传谱系树",
       "missingProjectId": "找不到项目ID，无法查看",
       "noPreview": "没有可预览的谱系树",
       "popupBlocked": "浏览器拦截了弹窗，请允许弹窗后再试",
       "uploadFailed": "项目已保存，但树图文件上传失败",
-      "deleteFailed": "删除树图出错"
+      "deleteFailed": "删除树图出错",
+      "syncFailed": "项目已保存，但谱系树文件同步失败，请稍后重试"
     },
     "save": {
       "backendFailed": "草稿已保存到浏览器，但同步到服务器失败，请检查网络连接",

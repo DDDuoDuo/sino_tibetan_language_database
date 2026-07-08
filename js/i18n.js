@@ -9,6 +9,16 @@
   let observer = null;
   const textNodeKeys = new WeakMap();
 
+  if (currentLocale !== "zh-cn") {
+    document.documentElement.classList.add("i18n-pending");
+    const style = document.createElement("style");
+    style.textContent = `
+      html.i18n-pending body { opacity: 0; }
+      body { transition: opacity 140ms ease; }
+    `;
+    document.head.appendChild(style);
+  }
+
   function getByPath(obj, path) {
     return String(path || "")
       .split(".")
@@ -73,6 +83,24 @@
     const value = getByPath(dictionary, key);
     if (value === undefined || value === null || value === "") return format(fallback, vars);
     return format(value, vars);
+  }
+
+  function parseVars(value) {
+    if (!value) return {};
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function stringifyVars(vars = {}) {
+    try {
+      return JSON.stringify(vars || {});
+    } catch (err) {
+      return "{}";
+    }
   }
 
   function translateKey(key, fallback = "") {
@@ -167,6 +195,14 @@
     });
   }
 
+  function selectElements(root, selector) {
+    if (root.nodeType === Node.ELEMENT_NODE) {
+      const matches = root.matches(selector) ? [root] : [];
+      return matches.concat([...root.querySelectorAll(selector)]);
+    }
+    return [...root.querySelectorAll(selector)];
+  }
+
   function applyTranslations(root = document) {
     if (isApplying || !sourceDictionary) return;
     if (root.nodeType === Node.TEXT_NODE) {
@@ -180,19 +216,19 @@
     }
     isApplying = true;
     try {
-      root.querySelectorAll("[data-i18n]").forEach((el) => {
+      selectElements(root, "[data-i18n]").forEach((el) => {
         const fallback = el.dataset.i18nFallback ?? el.textContent;
-        el.textContent = t(el.dataset.i18n, fallback);
+        el.textContent = t(el.dataset.i18n, fallback, parseVars(el.dataset.i18nVars));
       });
-      root.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+      selectElements(root, "[data-i18n-placeholder]").forEach((el) => {
         const fallback = el.getAttribute("placeholder") || "";
         el.setAttribute("placeholder", t(el.dataset.i18nPlaceholder, fallback));
       });
-      root.querySelectorAll("[data-i18n-title]").forEach((el) => {
+      selectElements(root, "[data-i18n-title]").forEach((el) => {
         const fallback = el.getAttribute("title") || "";
         el.setAttribute("title", t(el.dataset.i18nTitle, fallback));
       });
-      root.querySelectorAll("[data-i18n-aria-label]").forEach((el) => {
+      selectElements(root, "[data-i18n-aria-label]").forEach((el) => {
         const fallback = el.getAttribute("aria-label") || "";
         el.setAttribute("aria-label", t(el.dataset.i18nAriaLabel, fallback));
       });
@@ -206,6 +242,14 @@
 
   function setText(el, key, fallback) {
     if (el) el.textContent = t(key, fallback);
+  }
+
+  function setDynamicText(el, key, fallback = "", vars = {}) {
+    if (!el) return;
+    el.dataset.i18n = key;
+    el.dataset.i18nFallback = fallback;
+    el.dataset.i18nVars = stringifyVars(vars);
+    el.textContent = t(key, fallback, vars);
   }
 
   function applyCommonChrome(root = document) {
@@ -228,6 +272,7 @@
     loadLocale,
     applyTranslations,
     t,
+    setText: setDynamicText,
     translateLiteral,
     get locale() {
       return currentLocale;
@@ -263,7 +308,14 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     loadLocale(currentLocale)
-      .then(startObserver)
-      .catch((err) => console.warn("i18n load failed:", err));
+      .then(() => {
+        startObserver();
+        document.documentElement.classList.remove("i18n-pending");
+        document.documentElement.classList.add("i18n-ready");
+      })
+      .catch((err) => {
+        console.warn("i18n load failed:", err);
+        document.documentElement.classList.remove("i18n-pending");
+      });
   });
 })();

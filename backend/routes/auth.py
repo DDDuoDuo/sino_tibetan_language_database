@@ -214,6 +214,7 @@ def get_contributors():
         out.append({
             "id": r.get("id"),
             "username": r.get("username"),
+            "email": r.get("email"),
             "workplace": r.get("workplace"),
             "accountType": r.get("account_type") or "user",
             "createdAt": dt(r.get("created_at")),

@@ -197,7 +197,7 @@
   </header>
 
   <div class="welcome-container">
-    <h1>欢迎，<span id="profile-name"></span></h1>
+    <h1 id="profile-name"></h1>
   </div>
 
   <div class="project-description">
@@ -295,7 +295,16 @@
     const cu = JSON.parse(sessionStorage.getItem("currentUser") || "null");
     const userName = (cu && cu.username) || sessionStorage.getItem("username") || "未知用户";
     const title = (cu && cu.title) || "";
-    if (userNameSpan) userNameSpan.textContent = userName + title;
+    const displayName = userName + title;
+    function renderWelcome() {
+      if (window.I18N && I18N.setText) {
+        I18N.setText(userNameSpan, "projects.welcome", "欢迎，{username}", { username: displayName });
+      } else if (userNameSpan) {
+        userNameSpan.textContent = `欢迎，${displayName}`;
+      }
+    }
+    renderWelcome();
+    document.addEventListener("i18n:changed", renderWelcome);
 
     const profile = document.getElementById("profile");
     const dropdown = document.getElementById("dropdownMenu");

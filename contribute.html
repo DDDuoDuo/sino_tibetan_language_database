@@ -110,6 +110,7 @@
     .project-table td {
         padding: 16px;
         color: var(--text-main);
+        text-align: center;
         border-bottom: 1px solid var(--border-color);
         border-right: none;
         border-left: none;
@@ -287,6 +288,10 @@
 
     let searchTerm = "";
 
+    function tx(key, fallback, vars = {}) {
+        return window.I18N ? I18N.t(key, fallback, vars) : fallback.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
+    }
+
     async function loadContributors(page = 1) {
         const tbody = document.getElementById("contributors-table-body");
         const pageIndicator = document.getElementById("pageIndicator");
@@ -302,8 +307,8 @@
             if (!resp.ok) {
                 const text = await resp.text();
                 console.error("加载贡献者失败:", resp.status, text);
-                pop_up("加载贡献者失败，请检查网络连接", "r");
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">加载失败</td></tr>`;
+                pop_up(tx("contributors.loadFailed", "加载贡献者失败，请检查网络连接"), "r");
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">${escHTML(tx("contributors.messages.loadGenericFailed", "加载失败"))}</td></tr>`;
                 return;
             }
 
@@ -319,8 +324,8 @@
             currentPage = Number(data.page || page);
 
             if (!filtered.length) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: #888;">暂无贡献者</td></tr>`;
-                pageIndicator.textContent = `第 ${currentPage} 页`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: #888;">${escHTML(tx("contributors.empty", "暂无贡献者"))}</td></tr>`;
+                pageIndicator.textContent = tx("common.pagination.page", "第 {page} 页", { page: currentPage });
                 prevBtn.disabled = currentPage <= 1;
                 nextBtn.disabled = true;
                 return;
@@ -332,13 +337,18 @@
                 const createdAt = u.createdAt || "--";
                 const projectCount = u.projectCount ?? 0;
                 const vocabCount = u.vocabCount ?? 0;
-                const accountType = u.accountType === "admin" ? "管理员" : "普通用户";
+                const accountType = u.accountType === "admin"
+                    ? tx("contributors.accountTypes.admin", "管理员")
+                    : tx("contributors.accountTypes.user", "普通用户");
                 const isTargetAdmin = u.accountType === "admin";
+                const adminLabel = isTargetAdmin
+                    ? tx("contributors.actions.unsetAdmin", "取消管理员")
+                    : tx("contributors.actions.setAdmin", "设为管理员");
                 const adminAction = Auth.isAdmin()
-                    ? `<button type="button" class="view-btn account-type-btn" data-id="${escHTML(u.id)}" data-next="${isTargetAdmin ? "user" : "admin"}">${isTargetAdmin ? "取消管理员" : "设为管理员"}</button>`
+                    ? `<button type="button" class="view-btn account-type-btn" data-id="${escHTML(u.id)}" data-next="${isTargetAdmin ? "user" : "admin"}">${escHTML(adminLabel)}</button>`
                     : "";
 
-                const action = `<button type="button" class="view-btn contributor-view-btn" data-user="${escHTML(u.username)}">查看</button>${adminAction}`;
+                const action = `<button type="button" class="view-btn contributor-view-btn" data-user="${escHTML(u.username)}">${escHTML(tx("common.actions.view", "查看"))}</button>${adminAction}`;
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
@@ -365,37 +375,42 @@
                 btn.addEventListener("click", async () => {
                     const userId = btn.getAttribute("data-id");
                     const next = btn.getAttribute("data-next");
-                    try {
-                        const resp = await apiFetch(`${API_BASE}/contributors/${encodeURIComponent(userId)}/account-type`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ accountType: next })
-                        });
-                        const data = await resp.json();
-                        if (!resp.ok || !data.success) {
-                            pop_up(data.message || "设置账户类型失败", "r");
-                            return;
+                    if (confirm(tx("contributors.messages.updateConfirm", "确定要修改此用户的帐户类型？"))) {
+                        try {
+                            const resp = await apiFetch(`${API_BASE}/contributors/${encodeURIComponent(userId)}/account-type`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ accountType: next })
+                            });
+                            const data = await resp.json();
+                            if (!resp.ok || !data.success) {
+                                pop_up(data.message || tx("contributors.messages.updateFailed", "设置账户类型失败"), "r");
+                                return;
+                            }
+                            pop_up(tx("contributors.messages.updateSuccess", "账户类型已更新"), "g");
+                            loadContributors(currentPage);
+                        } catch (err) {
+                            console.error("设置账户类型出错:", err);
+                            pop_up(tx("contributors.messages.updateNetworkFailed", "设置账户类型失败，请检查网络连接"), "r");
                         }
-                        pop_up("账户类型已更新", "g");
-                        loadContributors(currentPage);
-                    } catch (err) {
-                        console.error("设置账户类型出错:", err);
-                        pop_up("设置账户类型失败，请检查网络连接", "r");
                     }
                 });
             });
 
             const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
             if (pager) pager.style.display = totalPages > 1 ? "flex" : "none";
-            pageIndicator.textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+            pageIndicator.textContent = tx("common.pagination.pageOfTotal", "第 {page} 页 / 共 {totalPages} 页", {
+                page: currentPage,
+                totalPages
+            });
 
             prevBtn.disabled = currentPage <= 1;
             nextBtn.disabled = currentPage >= totalPages;
 
         } catch (err) {
             console.error("加载贡献者出错:", err);
-            pop_up("加载贡献者失败，请检查网络连接", "r");
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: #888;">加载失败</td></tr>`;
+            pop_up(tx("contributors.loadFailed", "加载贡献者失败，请检查网络连接"), "r");
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: #888;">${escHTML(tx("contributors.messages.loadGenericFailed", "加载失败"))}</td></tr>`;
         }
     }
 
@@ -464,6 +479,7 @@
         }
 
         document.addEventListener("auth:changed", () => loadContributors(currentPage));
+        document.addEventListener("i18n:changed", () => loadContributors(currentPage));
         Promise.resolve(authReady).finally(() => loadContributors(1));
     });
 </script>

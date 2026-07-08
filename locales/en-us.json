@@ -1,5 +1,6 @@
 {
   "account": {
+    "accountType": "",
     "email": "Email",
     "optionalPlaceholder": "",
     "saveFailed": "",
@@ -81,11 +82,27 @@
     }
   },
   "contributors": {
+    "accountTypes": {
+      "admin": "",
+      "user": ""
+    },
+    "actions": {
+      "setAdmin": "",
+      "unsetAdmin": ""
+    },
     "empty": "",
     "loadFailed": "",
+    "messages": {
+      "loadGenericFailed": "",
+      "updateConfirm": "",
+      "updateFailed": "",
+      "updateNetworkFailed": "",
+      "updateSuccess": ""
+    },
     "searchPlaceholder": "",
     "table": {
       "actions": "",
+      "accountType": "",
       "email": "",
       "joinedAt": "",
       "projectCount": "",
@@ -164,6 +181,8 @@
       "missingProjectId": "",
       "noPreview": "",
       "popupBlocked": "",
+      "syncFailed": "",
+      "uploadedGeneric": "",
       "uploadFailed": ""
     }
   },
