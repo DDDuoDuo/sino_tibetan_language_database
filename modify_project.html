@@ -2375,23 +2375,13 @@
       renderTimeConclusion();
 
       document.getElementById("viewTreeFile").addEventListener("click", async () => {
-        let src = window.tempTreeFile?.dataURL || window.currentTreeDataURL;
+        let src = window.tempTreeFile?.objectURL || null;
         let title = window.currentTreeFileName || "treefile";
 
         if (!src) {
-          const projectId = window.currentProject.id;
+          const projectId = window.currentProject?.id || sessionStorage.getItem("editingProjectId");
           if (!projectId) { pop_up("找不到项目ID，无法查看", "r"); return; }
-          pop_up("正在从服务器获取树图文件...", "b");
-
-          const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/treefile`);
-          const data = await res.json();
-          const tf = data?.treeFile || data;
-
-          if (!tf?.content) { pop_up("未找到树图文件内容", "r"); return; }
-
-          const mime = tf.type || "image/png";
-          src = tf.content.startsWith("data:") ? tf.content : `data:${mime};base64,${tf.content}`;
-          title = tf.name || title;
+          src = `${API_BASE}/projects/${encodeURIComponent(projectId)}/treefile/download`;
         }
 
         if (!src) { pop_up("没有可预览的谱系树", "b"); return; }
@@ -2400,10 +2390,11 @@
         if (!win) { pop_up("浏览器拦截了弹窗，请允许弹窗后再试", "r"); return; }
 
         const escapedSrc = src.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+        const escapedTitle = escHTML(title);
         win.document.write(`
-          <html><head><meta charset="utf-8"><title>${title}</title></head>
-          <body style="margin:0;display:flex;align-items:center;justify-content:center;background:#202020;">
-            <img src="${escapedSrc}" style="max-width:100%;max-height:100vh;object-fit:contain;" />
+          <html><head><meta charset="utf-8"><title>${escapedTitle}</title></head>
+          <body style="margin:0;background:#202020;">
+            <iframe src="${escapedSrc}" title="${escapedTitle}" style="width:100%;height:100vh;border:0;background:#fff;"></iframe>
           </body></html>
         `);
         win.document.close();
@@ -2413,24 +2404,28 @@
         const file = treeFileInput.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          window.tempTreeFile = {
-            name: file.name,
-            type: file.type,
-            dataURL: e.target.result
-          };
+        if (window.tempTreeFile?.objectURL) {
+          URL.revokeObjectURL(window.tempTreeFile.objectURL);
+        }
 
-          window.currentTreeDataURL = null;
-          window.currentTreeFileName = file.name;
-          treeFileActions.style.display = "flex";
+        window.tempTreeFile = {
+          file,
+          name: file.name,
+          type: file.type,
+          objectURL: URL.createObjectURL(file)
         };
-        
-        reader.readAsDataURL(file);
+
+        window.currentTreeDataURL = null;
+        window.currentTreeFileName = file.name;
+        isTreeFileRemoved = false;
+        treeFileActions.style.display = "flex";
       });
 
       removeTreeFile.addEventListener("click", () => {
         treeFileInput.value = "";
+        if (window.tempTreeFile?.objectURL) {
+          URL.revokeObjectURL(window.tempTreeFile.objectURL);
+        }
         window.tempTreeFile = null;
         window.currentTreeDataURL = null;
         window.currentTreeFileName = null;
@@ -2918,23 +2913,13 @@
         lowerEra: computed.lowerEra
       } : { upper: '', upperEra: 'BC', lower: '', lowerEra: 'AD' };
 
-      let treeFileForBackend = undefined;
       let hasTreeFile = !!(existing?.hasTreeFile ?? 0);
 
-      if (window.tempTreeFile?.dataURL) {
-        treeFileForBackend = {
-          name: window.tempTreeFile.name,
-          type: window.tempTreeFile.type,
-          content: window.tempTreeFile.dataURL
-        };
+      if (window.tempTreeFile?.file) {
         hasTreeFile = true;
         isTreeFileRemoved = false;
       } else if (isTreeFileRemoved) {
-        treeFileForBackend = null;
         hasTreeFile = false;
-      } else if (hasTreeFile) {
-        treeFileForBackend = undefined;
-        hasTreeFile = true;
       }
 
       const isPublic = existing?.isPublic ?? false;
@@ -2967,16 +2952,14 @@
 
         const draftForBackend = { ...baseFields };
 
-        if (treeFileForBackend !== undefined) {
-          draftForBackend.treeFile = treeFileForBackend;
-        }
-
         try {
           const resp = await apiFetch(`${API_BASE}/projects`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(draftForBackend)
           });
+          let treeFileSyncFailed = false;
+          let backendResponseInvalid = false;
 
           if (!resp.ok) {
             console.error("保存到后端失败", resp.status, await resp.text());
@@ -2989,23 +2972,71 @@
               data = await resp.json();
             } catch (e) {
               console.warn("后端响应不是 JSON 或解析失败:", e);
+              backendResponseInvalid = true;
               pop_up("草稿已保存到浏览器，但同步到服务器失败，请检查网络连接", "r");
             }
 
             if (data && data.project) {
+              let savedHasTreeFile = hasTreeFile;
+
+              if (window.tempTreeFile?.file) {
+                const formData = new FormData();
+                formData.append("file", window.tempTreeFile.file);
+
+                try {
+                  const uploadResp = await apiFetch(`${API_BASE}/projects/${encodeURIComponent(currentId)}/treefile`, {
+                    method: "POST",
+                    body: formData
+                  });
+
+                  if (!uploadResp.ok) {
+                    console.error("树图文件上传失败", uploadResp.status, await uploadResp.text());
+                    treeFileSyncFailed = true;
+                  } else {
+                    savedHasTreeFile = true;
+                    if (window.tempTreeFile.objectURL) {
+                      URL.revokeObjectURL(window.tempTreeFile.objectURL);
+                    }
+                    window.tempTreeFile = null;
+                    window.currentTreeFileName = null;
+                    isTreeFileRemoved = false;
+                  }
+                } catch (err) {
+                  console.error("调用树图文件上传接口出错:", err);
+                  treeFileSyncFailed = true;
+                }
+              } else if (isTreeFileRemoved) {
+                try {
+                  const deleteResp = await apiFetch(`${API_BASE}/projects/${encodeURIComponent(currentId)}/treefile`, {
+                    method: "DELETE"
+                  });
+
+                  if (!deleteResp.ok) {
+                    console.error("树图文件删除失败", deleteResp.status, await deleteResp.text());
+                    treeFileSyncFailed = true;
+                  } else {
+                    savedHasTreeFile = false;
+                    isTreeFileRemoved = false;
+                  }
+                } catch (err) {
+                  console.error("调用树图文件删除接口出错:", err);
+                  treeFileSyncFailed = true;
+                }
+              }
+
               const newProject = {
                 ...data.project,
-                hasTreeFile,
-                treeFile:
-                  treeFileForBackend === null ? null :
-                  treeFileForBackend === undefined ? (data.project.treeFile || null) :
-                  treeFileForBackend,
+                hasTreeFile: savedHasTreeFile,
               };
               currentProject = newProject;
               window.currentProject = newProject;
+
+              if (treeFileSyncFailed) {
+                pop_up("项目已保存，但谱系树文件同步失败，请稍后重试", "r");
+              }
             }
 
-            if (currentPage <= 1) {
+            if (currentPage <= 1 && !treeFileSyncFailed && !backendResponseInvalid) {
               pop_up("草稿已保存并同步到服务器", "g");
             }
           }
