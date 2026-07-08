@@ -172,8 +172,28 @@
       margin-top: auto;
     }
 
+    .tree-file-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .tree-file-label {
+      font-weight: 600;
+    }
+
+    .tree-file-name {
+      color: var(--text-muted);
+      font-size: 14px;
+      max-width: 420px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .file-actions {
-      margin-top: 8px;
+      margin-top: 0;
       display: flex;
       gap: 10px;
     }
@@ -695,8 +715,9 @@
           
           <div id="language-container"></div>
 
-          <div class="form-group">
-            <label for="treeFile">谱系树：</label>
+          <div class="form-group tree-file-row">
+            <span class="tree-file-label">谱系树：</span>
+            <span id="treeFileName" class="tree-file-name"></span>
             <input type="file" id="treeFile" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt">
             <div id="treeFileActions" class="file-actions" style="display: none;">
               <button type="button" class="view-button" id="viewTreeFile">查看</button>
@@ -2166,9 +2187,14 @@
     window.setTreeFileUi = function setTreeFileUi(hasTreeFile) {
       const treeFileInput = document.getElementById("treeFile");
       const treeFileActions = document.getElementById("treeFileActions");
+      const treeFileName = document.getElementById("treeFileName");
       if (!treeFileInput || !treeFileActions) return;
       treeFileInput.style.display = hasTreeFile ? "none" : "";
       treeFileActions.style.display = hasTreeFile ? "flex" : "none";
+      if (treeFileName) {
+        treeFileName.textContent = hasTreeFile ? (window.currentTreeFileName || "已上传谱系树") : "";
+        treeFileName.title = hasTreeFile ? (window.currentTreeFileName || "") : "";
+      }
     };
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -2255,6 +2281,28 @@
         }
       }
 
+      async function fetchTreeFileMeta(projectId) {
+        if (!projectId) return null;
+        try {
+          const resp = await fetch(
+            `${API_BASE}/projects/${encodeURIComponent(projectId)}/treefile`,
+            { credentials: "include" }
+          );
+          if (!resp.ok) return null;
+
+          const data = await resp.json();
+          const treeFile = data?.treeFile || data;
+          return {
+            name: treeFile?.name || treeFile?.file_name || "",
+            type: treeFile?.type || treeFile?.mime_type || "",
+            updatedAt: treeFile?.updatedAt || treeFile?.updated_at || ""
+          };
+        } catch (err) {
+          console.warn("读取谱系树文件信息失败:", err);
+          return null;
+        }
+      }
+
       const currentUser = Auth.getCurrentUser();
 
       const urlParams = new URLSearchParams(window.location.search);
@@ -2329,6 +2377,10 @@
           }
 
           if (existing.hasTreeFile && !isTreeFileRemoved) {
+            const meta = await fetchTreeFileMeta(projectId);
+            if (meta?.name) {
+              window.currentTreeFileName = meta.name;
+            }
             window.setTreeFileUi(true);
           } else {
             window.setTreeFileUi(false);
@@ -2385,9 +2437,18 @@
       document.getElementById("viewTreeFile").addEventListener("click", async () => {
         let src = window.tempTreeFile?.objectURL || null;
         let title = window.currentTreeFileName || "treefile";
+        const projectId = window.currentProject?.id || sessionStorage.getItem("editingProjectId");
+
+        if (!window.currentTreeFileName && projectId) {
+          const meta = await fetchTreeFileMeta(projectId);
+          if (meta?.name) {
+            window.currentTreeFileName = meta.name;
+            title = meta.name;
+            window.setTreeFileUi(true);
+          }
+        }
 
         if (!src) {
-          const projectId = window.currentProject?.id || sessionStorage.getItem("editingProjectId");
           if (!projectId) { pop_up("找不到项目ID，无法查看", "r"); return; }
           src = `${API_BASE}/projects/${encodeURIComponent(projectId)}/treefile/download`;
         }
@@ -3006,7 +3067,6 @@
                       URL.revokeObjectURL(window.tempTreeFile.objectURL);
                     }
                     window.tempTreeFile = null;
-                    window.currentTreeFileName = null;
                     isTreeFileRemoved = false;
                     window.setTreeFileUi(true);
                   }
