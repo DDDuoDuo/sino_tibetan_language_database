@@ -39,7 +39,12 @@
     const select = footer.querySelector("#siteLocaleSelect");
     select.value = window.I18N?.locale || localStorage.getItem("site_locale") || "zh-cn";
     select.addEventListener("change", async () => {
-      if (window.I18N) await I18N.loadLocale(select.value);
+      if (window.I18N) {
+        await I18N.loadLocale(select.value);
+      } else {
+        localStorage.setItem("site_locale", select.value);
+      }
+      window.location.reload();
     });
 
     updateAdminLink();

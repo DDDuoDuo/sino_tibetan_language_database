@@ -294,11 +294,43 @@
     const userNameSpan = document.getElementById("profile-name");
     const cu = JSON.parse(sessionStorage.getItem("currentUser") || "null");
     const userName = (cu && cu.username) || sessionStorage.getItem("username") || "未知用户";
-    const title = (cu && cu.title) || "";
-    const displayName = userName + title;
+    const rawTitle = (cu && cu.title) || "";
+    function getTitleKey(title) {
+      const normalized = String(title || "").trim().toLowerCase();
+      const titleMap = {
+        "教授": "professor",
+        "professor": "professor",
+        "博士": "doctor",
+        "doctor": "doctor",
+        "dr": "doctor",
+        "dr.": "doctor",
+        "先生": "mr",
+        "mr": "mr",
+        "mr.": "mr",
+        "女士": "ms",
+        "ms": "ms",
+        "ms.": "ms"
+      };
+      return titleMap[normalized] || "";
+    }
+
+    function getLocalizedTitle() {
+      const key = getTitleKey(rawTitle);
+      if (!key) return rawTitle;
+      return window.I18N ? I18N.t(`auth.titles.${key}`, rawTitle) : rawTitle;
+    }
+
+    function getDisplayName() {
+      const title = getLocalizedTitle();
+      const locale = window.I18N?.locale || localStorage.getItem("site_locale") || "zh-cn";
+      if (!title) return userName;
+      return locale === "en-us" ? `${title} ${userName}` : `${userName}${title}`;
+    }
+
     function renderWelcome() {
+      const displayName = getDisplayName();
       if (window.I18N && I18N.setText) {
-        I18N.setText(userNameSpan, "projects.welcome", "欢迎，{username}", { username: displayName });
+        I18N.setText(userNameSpan, "projects.welcome", "欢迎，{displayName}", { displayName });
       } else if (userNameSpan) {
         userNameSpan.textContent = `欢迎，${displayName}`;
       }

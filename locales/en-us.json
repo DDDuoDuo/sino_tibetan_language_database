@@ -1,383 +1,383 @@
 {
-  "account": {
-    "accountType": "",
-    "email": "Email",
-    "optionalPlaceholder": "",
-    "saveFailed": "",
-    "saveSuccess": "",
-    "title": "",
-    "titleLabel": "",
-    "username": "",
-    "usernameRequired": "",
-    "workplace": ""
-  },
-  "auth": {
-    "email": "",
-    "hasAccount": "",
-    "loginFailed": "",
-    "loginNetworkFailed": "",
-    "loginSuccess": "",
-    "loginTitle": "",
-    "logoutSuccess": "",
-    "noAccount": "",
-    "password": "",
-    "registerFailed": "",
-    "registerNetworkFailed": "",
-    "registerTitle": "",
-    "requiredLoginFields": "",
-    "requiredRegisterFields": "",
-    "title": "",
-    "titles": {
-      "doctor": "",
-      "mr": "",
-      "ms": "",
-      "professor": ""
-    },
-    "username": "",
-    "workplace": ""
+  "meta": {
+    "locale": "en-US",
+    "languageName": "English",
+    "siteTitle": "Sino-Tibetan Language Divergence Time Database"
   },
   "common": {
-    "actions": {
-      "back": "",
-      "clear": "",
-      "close": "",
-      "delete": "",
-      "edit": "",
-      "exportCsv": "",
-      "login": "",
-      "next": "",
-      "previous": "",
-      "publish": "",
-      "register": "",
-      "remove": "",
-      "save": "",
-      "saveAndReturn": "",
-      "saveDraft": "",
-      "saveInfo": "",
-      "unpublish": "",
-      "view": ""
-    },
     "nav": {
-      "account": "My Account",
-      "contributors": "Contributors",
       "home": "Home",
-      "logout": "Logout",
-      "projects": "My projects",
-      "research": "Researches"
+      "research": "Research",
+      "contributors": "Contributors",
+      "account": "My Account",
+      "projects": "Manage Projects",
+      "logout": "Log Out"
     },
-    "pagination": {
-      "page": "",
-      "pageOfTotal": ""
+    "actions": {
+      "login": "Log In",
+      "register": "Register",
+      "save": "Save",
+      "saveInfo": "Save Information",
+      "saveDraft": "Save Draft",
+      "saveAndReturn": "Save and Return",
+      "back": "Back",
+      "previous": "Previous",
+      "next": "Next",
+      "clear": "Clear",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "remove": "Remove",
+      "publish": "Make Public",
+      "unpublish": "Make Private",
+      "exportCsv": "Export CSV File",
+      "close": "Close"
     },
     "status": {
-      "loadingFailed": "",
-      "networkError": "",
-      "noData": "",
-      "unknownAuthor": "",
-      "unknownUser": "",
-      "untitledProject": ""
+      "loadingFailed": "Loading failed",
+      "noData": "No data available",
+      "unknownUser": "Unknown user",
+      "unknownAuthor": "Unknown author",
+      "untitledProject": "Untitled project",
+      "networkError": "Please check your network connection"
     },
     "theme": {
-      "toggle": ""
+      "toggle": "Toggle Theme"
+    },
+    "pagination": {
+      "page": "Page {page}",
+      "pageOfTotal": "Page {page} of {totalPages}"
+    }
+  },
+  "footer": {
+    "contact": "Contact",
+    "links": "Links",
+    "language": "Language",
+    "translationEditor": "Translation Editor",
+    "copyright": "© The Education University of Hong Kong. All rights reserved."
+  },
+  "auth": {
+    "loginTitle": "Log In",
+    "registerTitle": "Register",
+    "email": "Email",
+    "password": "Password",
+    "username": "Name / Username",
+    "title": "Title",
+    "workplace": "Affiliation (optional)",
+    "noAccount": "No account?",
+    "hasAccount": "Already have an account?",
+    "requiredLoginFields": "Please enter your email and password",
+    "requiredRegisterFields": "Please fill in all required fields",
+    "loginSuccess": "Logged in successfully",
+    "loginFailed": "Login failed",
+    "loginNetworkFailed": "Login failed. Please check your network connection",
+    "registerFailed": "Registration failed",
+    "registerNetworkFailed": "Registration failed. Please check your network connection",
+    "logoutSuccess": "Logged out",
+    "titles": {
+      "professor": "Professor",
+      "doctor": "Dr.",
+      "mr": "Mr.",
+      "ms": "Ms."
+    }
+  },
+  "home": {
+    "headline": "Sino-Tibetan Language Divergence Time Database",
+    "introParagraphs": [
+      "The Sino-Tibetan Language Divergence Time Database aims to collect information on divergence times among languages and dialects within the Sino-Tibetan family through the historical-comparative method and lexical evidence. These lexical items carry chronological information, such as names for tool materials (stone, iron, copper), domesticated animals, introduced species or concepts, and loanwords. By combining archaeological findings and historical sources with lexical stratigraphic analysis, researchers can estimate the upper and lower bounds of divergence for target languages or dialects. Users can use this database to trace language divergence processes and compare divergence patterns across branches of the family.",
+      "The number of lexical items and languages included in this database will continue to grow as more researchers contribute. Each dataset is provided by specialists in the relevant languages and their historical development. When using materials from the database, please cite the relevant contributors and this project. The database supports search and access by language, time period, lexical item, contributor, and other criteria. Suggested citation format: contributor name, year, project title, website name, accessed on Year-Month-Date."
+    ],
+    "aboutPrefix": "This database was designed by Dr. Hongdi Ding and Dr. Yuan Liang of the Research Centre for Chinese Language and Education, Faculty of Humanities, The Education University of Hong Kong. It is developed and maintained by independent scholars Renjun Liang and Mianyi Chen, with technical collaboration and infrastructure support from",
+    "culiuTeam": "Culiu Technology Team",
+    "aboutSuffix": "including server deployment, system architecture optimization, and ongoing operations. The project brings together academic research and engineering practice, and is intended to provide linguists and historians with a professional platform for research, resource sharing, and scholarly exchange.",
+    "contact": "Contact: hongdiding@gmail.com",
+    "techSupport": "Technical support:",
+    "exploreAndContribute": "Explore and Contribute",
+    "prompt": "Enter the database to browse research results or contribute new data",
+    "exploreResearch": "Search Research",
+    "contributeResearch": "Contribute Research"
+  },
+  "research": {
+    "mapTitle": "Sino-Tibetan Language Divergence Time Distribution",
+    "timelineAria": "Dynasty timeline (X-axis)",
+    "timelineHint": "*Data are periodized by dynasty",
+    "projectListTitle": "Language Research Project List",
+    "searchPlaceholder": "Search by author username...",
+    "noTimedProjects": "No public projects with time information yet",
+    "noMatchingProjects": "No matching public projects",
+    "loadPublicProjectsFailed": "Failed to load public projects. Please check your network connection",
+    "dynasties": [
+      "Prehistoric",
+      "Shang",
+      "Western Zhou",
+      "Spring and Autumn",
+      "Warring States",
+      "Qin",
+      "Han",
+      "Three Kingdoms",
+      "Jin",
+      "Northern and Southern Dynasties",
+      "Sui",
+      "Tang",
+      "Five Dynasties and Ten Kingdoms",
+      "Song",
+      "Yuan",
+      "Ming",
+      "Qing",
+      "Republican Era",
+      "Modern"
+    ],
+    "table": {
+      "projectName": "Project Name",
+      "vocabCount": "Vocabulary Count",
+      "researchTarget": "Research Target",
+      "author": "Author",
+      "updatedAt": "Updated At",
+      "actions": "Actions"
     }
   },
   "contributors": {
+    "title": "Contributor List",
+    "searchPlaceholder": "Search username / affiliation...",
+    "loadFailed": "Failed to load contributors. Please check your network connection",
+    "empty": "No contributors yet",
+    "table": {
+      "username": "Username",
+      "email": "Email",
+      "workplace": "Affiliation",
+      "accountType": "Account Type",
+      "joinedAt": "Joined At",
+      "projectCount": "Project Count",
+      "vocabCount": "Vocabulary Count",
+      "actions": "Actions"
+    },
     "accountTypes": {
-      "admin": "",
-      "user": ""
+      "admin": "Admin",
+      "user": "User"
     },
     "actions": {
-      "setAdmin": "",
-      "unsetAdmin": ""
+      "setAdmin": "Make Admin",
+      "unsetAdmin": "Remove Admin"
     },
-    "empty": "",
-    "loadFailed": "",
     "messages": {
-      "loadGenericFailed": "",
-      "updateConfirm": "",
-      "updateFailed": "",
-      "updateNetworkFailed": "",
-      "updateSuccess": ""
-    },
-    "searchPlaceholder": "",
-    "table": {
-      "actions": "",
-      "accountType": "",
-      "email": "",
-      "joinedAt": "",
-      "projectCount": "",
-      "username": "",
-      "vocabCount": "",
-      "workplace": ""
-    },
-    "title": ""
-  },
-  "footer": {
-    "contact": "",
-    "copyright": "",
-    "language": "",
-    "links": "",
-    "translationEditor": ""
-  },
-  "home": {
-    "contributeResearch": "Contribute Research",
-    "exploreAndContribute": "Explore and Contribute",
-    "exploreResearch": "Explore Research",
-    "headline": "Sino-Tibetan Language Database",
-    "introParagraphs": [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    "prompt": ""
-  },
-  "meta": {
-    "languageName": "",
-    "locale": "",
-    "siteTitle": ""
-  },
-  "projectEditor": {
-    "editTitle": "",
-    "fields": {
-      "languageList": "",
-      "projectDesc": "",
-      "projectDescPlaceholder": "",
-      "projectId": "",
-      "projectName": "",
-      "projectNamePlaceholder": "",
-      "projectType": "",
-      "references": "",
-      "referencesPlaceholder": "",
-      "treeFile": ""
-    },
-    "language": {
-      "add": "",
-      "currentCount": "",
-      "latitudePlaceholder": "",
-      "longitudePlaceholder": "",
-      "max": "",
-      "namePlaceholder": ""
-    },
-    "newTitle": "",
-    "requirements": [
-      "",
-      "",
-      "",
-      ""
-    ],
-    "requirementsTitle": "",
-    "save": {
-      "backendFailed": "",
-      "backendInvalidJson": "",
-      "networkFailed": "",
-      "success": ""
-    },
-    "treeFile": {
-      "deleteFailed": "",
-      "missingProjectId": "",
-      "noPreview": "",
-      "popupBlocked": "",
-      "syncFailed": "",
-      "uploadedGeneric": "",
-      "uploadFailed": ""
+      "loadGenericFailed": "Loading failed",
+      "updateConfirm": "Are you sure you want to change this user's account type?",
+      "updateFailed": "Failed to update account type",
+      "updateNetworkFailed": "Failed to update account type. Please check your network connection",
+      "updateSuccess": "Account type updated"
     }
   },
   "projects": {
-    "deleteConfirm": "",
-    "deleteFailed": "",
-    "deleteNetworkFailed": "",
-    "deleteSuccess": "",
-    "description": "",
-    "empty": "",
-    "loadFailed": "",
-    "myProjects": "",
-    "newProject": "",
+    "title": "Project Management",
+    "welcome": "Welcome, {displayName}",
+    "description": "We aim to infer the divergence times of Sino-Tibetan languages or dialects through the historical-comparative method by collecting lexical data that contain chronological information. The project also traces possible human migration routes, builds an open shared lexical database, and supports research on language evolution.",
+    "myProjects": "My Project List",
+    "newProject": "New Project",
+    "empty": "No projects yet",
+    "loadFailed": "Failed to load projects. Please check your network connection",
+    "deleteConfirm": "Are you sure you want to delete this project?",
+    "deleteFailed": "Delete failed. Please check your network connection",
+    "deleteSuccess": "Project deleted",
+    "deleteNetworkFailed": "Server connection failed while deleting. Please check your network connection",
+    "publishFailed": "Failed to make project public. Please check your network connection",
+    "publishSuccess": "Project is now public",
+    "publishNetworkFailed": "Server connection failed while making the project public",
+    "unpublishFailed": "Failed to make project private. Please check your network connection",
+    "unpublishSuccess": "Project is now private",
+    "unpublishNetworkFailed": "Server connection failed while making the project private",
+    "table": {
+      "projectName": "Project Name",
+      "vocabCount": "Vocabulary Count",
+      "researchTarget": "Research Target",
+      "author": "Author",
+      "createdAt": "Created At",
+      "actions": "Actions"
+    },
     "projectTypes": {
-      "dialects": "",
-      "multipleTargets": "",
-      "targetVsOther": ""
-    },
-    "publishFailed": "",
-    "publishNetworkFailed": "",
-    "publishSuccess": "",
-    "table": {
-      "actions": "",
-      "author": "",
-      "createdAt": "",
-      "projectName": "",
-      "researchTarget": "",
-      "vocabCount": ""
-    },
-    "title": "",
-    "unpublishFailed": "",
-    "unpublishNetworkFailed": "",
-    "unpublishSuccess": "",
-    "welcome": ""
+      "targetVsOther": "Divergence time between a target language and other languages",
+      "multipleTargets": "Divergence times among multiple target languages",
+      "dialects": "Divergence times among dialects of a target language"
+    }
   },
-  "research": {
-    "dynasties": [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
+  "account": {
+    "title": "Account Information",
+    "email": "Email",
+    "username": "Username",
+    "titleLabel": "Title",
+    "workplace": "Affiliation",
+    "accountType": "Account Type",
+    "optionalPlaceholder": "Optional",
+    "usernameRequired": "Username cannot be empty",
+    "saveFailed": "Save failed. Please check your network connection",
+    "saveSuccess": "Information saved"
+  },
+  "projectEditor": {
+    "newTitle": "New Project",
+    "editTitle": "Edit Project",
+    "requirementsTitle": "Contributor Requirements:",
+    "requirements": [
+      "Comparative vocabulary for the target languages or dialects",
+      "At least two target languages or dialects",
+      "A wordlist of 2,000 or more items for each language or dialect",
+      "A reference phylogenetic tree covering the target languages or dialects"
     ],
-    "loadPublicProjectsFailed": "",
-    "mapTitle": "",
-    "noMatchingProjects": "",
-    "noTimedProjects": "",
-    "projectListTitle": "",
-    "searchPlaceholder": "",
-    "table": {
-      "actions": "",
-      "author": "",
-      "projectName": "",
-      "researchTarget": "",
-      "updatedAt": "",
-      "vocabCount": ""
+    "fields": {
+      "projectId": "Project ID:",
+      "projectName": "Project Name:",
+      "projectNamePlaceholder": "Enter project name",
+      "projectDesc": "Project Description:",
+      "projectDescPlaceholder": "Briefly describe the content, purpose, or data source of this project",
+      "projectType": "Project Type:",
+      "languageList": "Language List:",
+      "treeFile": "Phylogenetic Tree:",
+      "references": "References:",
+      "referencesPlaceholder": "Enter reference links or data sources"
     },
-    "timelineAria": "",
-    "timelineHint": ""
+    "language": {
+      "add": "Add Language",
+      "max": "You can add at most 6 languages",
+      "namePlaceholder": "Enter language name",
+      "longitudePlaceholder": "Longitude",
+      "latitudePlaceholder": "Latitude",
+      "currentCount": "Current language count: {count}; you can add {remaining} more rows"
+    },
+    "treeFile": {
+      "uploadedGeneric": "Phylogenetic tree uploaded",
+      "missingProjectId": "Project ID not found. Cannot view file",
+      "noPreview": "No phylogenetic tree available for preview",
+      "popupBlocked": "The popup was blocked by your browser. Please allow popups and try again",
+      "uploadFailed": "Project saved, but tree file upload failed",
+      "deleteFailed": "Failed to delete tree file",
+      "syncFailed": "Project saved, but phylogenetic tree file sync failed. Please try again later"
+    },
+    "save": {
+      "backendFailed": "Draft saved in the browser, but failed to sync to the server. Please check your network connection",
+      "backendInvalidJson": "Draft saved in the browser, but failed to sync to the server. Please check your network connection",
+      "networkFailed": "Draft saved in the browser, but the server connection failed",
+      "success": "Draft saved and synced to the server"
+    }
   },
   "vocab": {
-    "addVocab": "",
-    "comparison": {
-      "addRow": "",
-      "currentCount": "",
-      "features": [
-        "",
-        "",
-        ""
-      ],
-      "maxRows": "",
-      "pageTitle": "",
-      "phonologicalCorrespondence": "",
-      "prompt": "",
-      "referenceWordPlaceholder": "",
-      "word": ""
+    "pageTitle": "Vocabulary List",
+    "addVocab": "Add Vocabulary",
+    "selectCategoryAndWord": "Please select a category and word",
+    "deleteConfirm": "Are you sure you want to delete this vocabulary item?",
+    "deleteSuccess": "Vocabulary item deleted",
+    "noVocab": "No vocabulary yet",
+    "currentWordEmpty": "No vocabulary yet",
+    "selectWord": "Please select a word",
+    "customWordPlaceholder": "Enter a word",
+    "table": {
+      "word": "Lexical Item",
+      "level": "Historical Layer",
+      "fullMatch": "Complete Regular Correspondence",
+      "partialMatch": "Incomplete Regular Correspondence",
+      "relaxedMatch": "Relaxed Complete Regular Correspondence",
+      "timeInfo": "Time Information",
+      "evidence": "Evidence Words",
+      "recordedAt": "Recorded At",
+      "actions": "Actions",
+      "link": "Link"
     },
-    "currentWordEmpty": "",
-    "customWordPlaceholder": "",
-    "deleteConfirm": "",
-    "deleteSuccess": "",
-    "exports": {
-      "allEvidenceFilename": "",
-      "divergenceFilename": "",
-      "exportedCsv": ""
-    },
-    "history": {
-      "borrowed": "",
-      "borrowedNote": "",
-      "cognateTooltip": "",
-      "cognateWithSister": "",
-      "early": "",
-      "explainableTooltip": "",
-      "explainableWithDonor": "",
-      "late": "",
-      "middle": "",
-      "native": "",
-      "nativeNote": "",
-      "no": "",
-      "originType": "",
-      "pageTitle": "",
-      "selectLevel": "",
-      "yes": ""
+    "syllables": {
+      "pageTitle": "Vocabulary Syllables",
+      "addDialect": "Add Dialect",
+      "dialectName": "Dialect Name",
+      "syllable": "Syllable",
+      "syllablePlaceholder": "Enter syllable"
     },
     "matching": {
-      "full": "",
-      "fullNote": "",
-      "fullyDivided": "",
-      "partial": "",
-      "question": "",
-      "relaxedNo": "",
-      "relaxedNote": "",
-      "relaxedQuestion": "",
-      "relaxedYes": "",
-      "tooltip": "",
-      "undivided": ""
+      "question": "Please evaluate the correspondence pattern for this lexical item",
+      "tooltip": "Complete and regular correspondence is strictly defined as systematic phonological correspondence across languages at the levels of initials, finals, and tonal systems for all syllables of a lexical item, rather than accidental surface phonetic similarity.",
+      "full": "Complete and regular correspondence",
+      "partial": "Incomplete or non-regular correspondence",
+      "fullNote": "*Complete and regular correspondence indicates that the languages have not diverged",
+      "relaxedQuestion": "Is there relaxed regular correspondence?",
+      "relaxedYes": "Yes. The languages with incomplete correspondence for this item occur only within the same branch of the phylogenetic tree, while complete and regular correspondence still holds across different branches",
+      "relaxedNo": "No. The languages with incomplete correspondence for this item occur not only within the same branch of the phylogenetic tree, but also across different branches",
+      "relaxedNote": "*This lexical item indicates that the languages have fully diverged",
+      "undivided": "Undiverged",
+      "fullyDivided": "Fully diverged"
     },
-    "noVocab": "",
-    "pageTitle": "",
-    "selectCategoryAndWord": "",
-    "selectWord": "",
-    "syllables": {
-      "addDialect": "",
-      "dialectName": "",
-      "pageTitle": "",
-      "syllable": "",
-      "syllablePlaceholder": ""
+    "comparison": {
+      "pageTitle": "Vocabulary Comparison",
+      "prompt": "Please provide correspondence evidence",
+      "addRow": "Add Row",
+      "maxRows": "You can add at most 4 words",
+      "word": "Word",
+      "phonologicalCorrespondence": "Phonological Correspondence",
+      "referenceWordPlaceholder": "Reference word",
+      "features": [
+        "Initial",
+        "Final",
+        "Tone"
+      ],
+      "currentCount": "Current word count: {count}; you can add {remaining} more rows"
     },
-    "table": {
-      "actions": "",
-      "evidence": "",
-      "fullMatch": "",
-      "level": "",
-      "link": "",
-      "partialMatch": "",
-      "recordedAt": "",
-      "relaxedMatch": "",
-      "timeInfo": "",
-      "word": ""
+    "history": {
+      "pageTitle": "Historical Layer, Explainability, and Cognacy",
+      "selectLevel": "Please select a historical layer",
+      "early": "Early",
+      "middle": "Middle",
+      "late": "Late",
+      "yes": "Yes",
+      "no": "No",
+      "explainableWithDonor": "Explainable by the donor language:",
+      "explainableTooltip": "Explainable by the donor language means that the phonological development of a suspected loanword must be reasonably explainable through the phonological system and historical development of the donor language.",
+      "cognateWithSister": "Cognate with closely related sister languages:",
+      "cognateTooltip": "Cognate with words in more closely related sister languages or dialects in the phylogenetic relationship",
+      "originType": "Lexical Type:",
+      "borrowed": "Loanword",
+      "native": "Native word",
+      "borrowedNote": "*This word is a loanword",
+      "nativeNote": "*This word is a native word"
     },
     "time": {
-      "borrowSourcePrompt": "",
-      "changeTypePrompt": "",
-      "clusterSimplification": "",
-      "devoicing": "",
-      "earlyMandarin": "",
+      "pageTitle": "Time Information",
+      "borrowSourcePrompt": "Please select the period and language from which this loanword was borrowed",
+      "oldChinese": "Old Chinese",
+      "middleChinese": "Middle Chinese",
+      "earlyMandarin": "Early Mandarin",
+      "modernChinese": "Modern Chinese",
+      "otherLanguage": "Other language",
+      "fillPlaceholder": "Please fill in",
+      "changeTypePrompt": "Please select the type of phonological change for this loanword",
+      "devoicing": "Devoicing",
+      "labiodentalization": "Labiodentalization",
+      "vowelRaisingLowering": "Vowel raising or lowering",
+      "clusterSimplification": "Consonant cluster simplification",
+      "other": "Other",
+      "rangePrompt": "Please fill in or adjust the lower and upper time bounds according to literature or the timing of phonological changes",
+      "sentencePrefix": "According to literature or historical records, ",
+      "sentenceParticle": "'s",
       "eventType": {
-        "cultivation": "",
-        "domestication": "",
-        "introduction": "",
-        "use": ""
+        "domestication": "domestication",
+        "use": "use",
+        "cultivation": "cultivation",
+        "introduction": "introduction"
       },
-      "fillPlaceholder": "",
-      "labiodentalization": "",
-      "loadReferenceFailed": "",
-      "middleChinese": "",
-      "modernChinese": "",
-      "oldChinese": "",
-      "other": "",
-      "otherLanguage": "",
-      "pageTitle": "",
-      "rangePrompt": "",
-      "referenceHintPrefix": "",
-      "referenceHintSuffix": "",
-      "referenceLink": "",
-      "referenceTable1": "",
-      "referenceTable2": "",
-      "referenceTableTitle": "",
-      "sentenceParticle": "",
-      "sentencePrefix": "",
-      "timeIs": "",
-      "vowelRaisingLowering": "",
-      "yearPlaceholder": ""
+      "timeIs": "occurred in",
+      "yearPlaceholder": "Year",
+      "referenceHintPrefix": "*Click to view a series of",
+      "referenceLink": "time references",
+      "referenceHintSuffix": "for reference, or make a more precise adjustment.",
+      "referenceTableTitle": "Time Reference Table",
+      "referenceTable1": "Reference Table 1",
+      "referenceTable2": "Reference Table 2",
+      "loadReferenceFailed": "Failed to load reference tables. Please check your network connection"
+    },
+    "exports": {
+      "exportedCsv": "CSV file exported",
+      "divergenceFilename": "divergence_information.csv",
+      "allEvidenceFilename": "all_vocabulary_evidence.csv"
     },
     "wordOptionsFallback": {
-      "crops": "",
-      "foreignCultureConcepts": "",
-      "fruits": "",
-      "livestock": "",
-      "toolMaterials": "",
-      "vegetables": ""
+      "toolMaterials": "Tool materials",
+      "crops": "Cereal crops",
+      "vegetables": "Vegetables",
+      "fruits": "Fruits",
+      "livestock": "Livestock",
+      "foreignCultureConcepts": "Introduced cultural concepts"
     }
   }
 }
