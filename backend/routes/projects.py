@@ -17,6 +17,7 @@ from models.treefiles import (
     get_file_path,
 )
 from routes.auth import require_auth
+from models.users import get_user_by_id
 import json
 
 projects_bp = Blueprint("projects", __name__)
@@ -263,13 +264,14 @@ def save_project():
     if not data.get("id"):
         return jsonify({"success": False, "message": "id 必填"}), 400
 
-    # Enforce ownership: authorId must match the logged-in user
-    data["authorId"] = request.current_user_id
-
-    # If updating, verify the caller owns the project
     existing = get_project(data["id"])
-    if existing and existing.get("author_id") != request.current_user_id:
-        return jsonify({"success": False, "message": "无权修改此项目"}), 403
+    if existing:
+        _, err = _check_project_owner_or_admin(data["id"])
+        if err:
+            return err
+        data["authorId"] = existing.get("author_id")
+    else:
+        data["authorId"] = request.current_user_id
 
     upsert_project(data)
 
@@ -314,14 +316,21 @@ def save_project():
         }
     })
 
-def _check_project_owner(project_id):
-    """Return (project, error_response). If error_response is not None, return it."""
+def _current_user_is_admin():
+    user = get_user_by_id(request.current_user_id)
+    return bool(user and user.get("account_type") == "admin")
+
+def _check_project_owner_or_admin(project_id):
+    """Return (project, error_response). Allows project owners and admins."""
     proj = get_project(project_id)
     if not proj:
         return None, (jsonify({"success": False, "message": "项目不存在"}), 404)
-    if proj.get("author_id") != request.current_user_id:
+    if proj.get("author_id") != request.current_user_id and not _current_user_is_admin():
         return None, (jsonify({"success": False, "message": "无权操作此项目"}), 403)
     return proj, None
+
+def _check_project_owner(project_id):
+    return _check_project_owner_or_admin(project_id)
 
 @projects_bp.post("/projects/<project_id>/publish")
 @require_auth

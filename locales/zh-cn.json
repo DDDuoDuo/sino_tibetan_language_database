@@ -106,6 +106,11 @@
     "noTimedProjects": "暂无带有时间信息的公开项目",
     "noMatchingProjects": "暂无匹配的公开项目",
     "loadPublicProjectsFailed": "加载公开项目失败，请检查网络连接",
+    "loginRequiredToView": "请先登录后查看项目",
+    "viewNotPublic": "该项目不是公开项目，无法查看",
+    "deletePublicProjectConfirm": "确定要删除该公开项目吗？",
+    "deletePublicProjectFailed": "删除公开项目失败，请检查网络连接",
+    "deletePublicProjectSuccess": "已删除公开项目",
     "dynasties": [
       "史前",
       "商",
@@ -164,7 +169,8 @@
       "updateConfirm": "确定要修改此用户的帐户类型？",
       "updateFailed": "设置账户类型失败",
       "updateNetworkFailed": "设置账户类型失败，请检查网络连接",
-      "updateSuccess": "账户类型已更新"
+      "updateSuccess": "账户类型已更新",
+      "adminRequired": "需要管理员权限"
     }
   },
   "projects": {
@@ -214,6 +220,10 @@
   "projectEditor": {
     "newTitle": "新建项目",
     "editTitle": "编辑项目",
+    "viewTitle": "查看项目",
+    "unlock": "解除锁定",
+    "unlockSuccess": "已解除锁定，可以编辑项目",
+    "viewMissingProject": "找不到项目ID，无法查看",
     "requirementsTitle": "贡献者要求：",
     "requirements": [
       "具有目标语言或者方言的比较词汇",

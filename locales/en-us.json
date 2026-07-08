@@ -10,7 +10,7 @@
       "research": "Research",
       "contributors": "Contributors",
       "account": "My Account",
-      "projects": "Manage Projects",
+      "projects": "My Projects",
       "logout": "Log Out"
     },
     "actions": {
@@ -106,6 +106,11 @@
     "noTimedProjects": "No public projects with time information yet",
     "noMatchingProjects": "No matching public projects",
     "loadPublicProjectsFailed": "Failed to load public projects. Please check your network connection",
+    "loginRequiredToView": "Please log in before viewing the project",
+    "viewNotPublic": "This project is not public and cannot be viewed",
+    "deletePublicProjectConfirm": "Are you sure you want to delete this public project?",
+    "deletePublicProjectFailed": "Failed to delete the public project. Please check your network connection",
+    "deletePublicProjectSuccess": "Public project deleted",
     "dynasties": [
       "Prehistoric",
       "Shang",
@@ -164,7 +169,8 @@
       "updateConfirm": "Are you sure you want to change this user's account type?",
       "updateFailed": "Failed to update account type",
       "updateNetworkFailed": "Failed to update account type. Please check your network connection",
-      "updateSuccess": "Account type updated"
+      "updateSuccess": "Account type updated",
+      "adminRequired": "Admin permission is required"
     }
   },
   "projects": {
@@ -214,6 +220,10 @@
   "projectEditor": {
     "newTitle": "New Project",
     "editTitle": "Edit Project",
+    "viewTitle": "View Project",
+    "unlock": "Unlock",
+    "unlockSuccess": "Unlocked. You can now edit this project",
+    "viewMissingProject": "Project ID not found. Cannot view project",
     "requirementsTitle": "Contributor Requirements:",
     "requirements": [
       "Comparative vocabulary for the target languages or dialects",

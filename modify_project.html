@@ -1271,11 +1271,94 @@
     let lastSavedSnapshot = null;
     let vocabEditBaselineSnapshot = null;
     let suppressUnsavedWarning = false;
+    let isViewMode = false;
+    let viewModeUnlocked = false;
     window.currentProject = null;
+
+    function tx(key, fallback, vars = {}) {
+      return window.I18N ? I18N.t(key, fallback, vars) : fallback;
+    }
+
+    function isProjectReadOnly() {
+      return isViewMode && !viewModeUnlocked;
+    }
+
+    function setProjectTitles(modeTitle) {
+      document.getElementById("infoPageTitle").textContent = modeTitle;
+      document.getElementById("vocabPageTitle").textContent = modeTitle;
+      document.title = modeTitle;
+    }
+
+    function applyProjectMode() {
+      const readOnly = isProjectReadOnly();
+      const modeTitle = readOnly
+        ? tx("projectEditor.viewTitle", "查看项目")
+        : (window.currentProject ? tx("projectEditor.editTitle", "编辑项目") : tx("projectEditor.newTitle", "新建项目"));
+
+      setProjectTitles(modeTitle);
+
+      document.querySelectorAll(".page input, .page textarea, .page select").forEach(el => {
+        if (el.id === "projectId") {
+          el.readOnly = true;
+          return;
+        }
+        el.disabled = readOnly;
+      });
+
+      const hasVisibleTreeFile = !!(window.tempTreeFile?.file || (window.currentProject?.hasTreeFile && !isTreeFileRemoved));
+      document.getElementById("addLanguageBtn")?.style.setProperty("display", readOnly ? "none" : "");
+      document.getElementById("treeFile")?.style.setProperty("display", (readOnly || hasVisibleTreeFile) ? "none" : "");
+      document.getElementById("removeTreeFile")?.style.setProperty("display", readOnly ? "none" : "");
+      document.getElementById("addVocabBtn")?.style.setProperty("display", readOnly ? "none" : "");
+
+      document.querySelectorAll(".remove-language").forEach(btn => {
+        btn.style.display = readOnly ? "none" : "";
+      });
+
+      document.querySelectorAll('button[onclick="saveDraft()"], button[onclick="unlockProjectEditMode()"]').forEach(btn => {
+        if (readOnly) {
+          if (Auth.isAdmin()) {
+            btn.style.display = "";
+            btn.textContent = tx("projectEditor.unlock", "解除锁定");
+            btn.setAttribute("onclick", "unlockProjectEditMode()");
+          } else {
+            btn.style.display = "none";
+          }
+        } else {
+          btn.style.display = "";
+          btn.textContent = tx("common.actions.saveDraft", "保存草稿");
+          btn.setAttribute("onclick", "saveDraft()");
+        }
+      });
+
+      document.querySelectorAll('button[onclick="saveVocab()"]').forEach(btn => {
+        btn.style.display = readOnly ? "none" : "";
+      });
+
+      document.querySelectorAll(".edit-button, .delete-button").forEach(btn => {
+        btn.style.display = readOnly ? "none" : "";
+      });
+
+      if (typeof languageContainer !== "undefined" && languageContainer) updateRemoveButtons();
+    }
+
+    window.unlockProjectEditMode = function unlockProjectEditMode() {
+      if (!Auth.isAdmin()) {
+        pop_up(tx("contributors.messages.adminRequired", "需要管理员权限"), "r");
+        return;
+      }
+      viewModeUnlocked = true;
+      applyProjectMode();
+      loadVocabList();
+      markDraftSaved();
+      pop_up(tx("projectEditor.unlockSuccess", "已解除锁定，可以编辑项目"), "g");
+    };
 
     function updateRemoveButtons() {
       const removeBtns = document.querySelectorAll(".remove-language");
-      removeBtns.forEach(btn => btn.style.display = (languageContainer.children.length > 2 ? "inline-block" : "none"));
+      removeBtns.forEach(btn => {
+        btn.style.display = (!isProjectReadOnly() && languageContainer.children.length > 2) ? "inline-block" : "none";
+      });
     }
 
     function addLanguageInput(value = "", lng = "", lat = "") {
@@ -1479,7 +1562,7 @@
     window.returnToProjectsSafely = function returnToProjectsSafely() {
       if (!hasUnsavedChanges() || confirm("当前项目有未保存的修改，确定要离开吗？")) {
         suppressUnsavedWarning = true;
-        window.location.href = "projects.html";
+        window.location.href = isViewMode ? "language_map.html" : "projects.html";
       }
     };
 
@@ -2304,21 +2387,24 @@
       const treeFileActions = document.getElementById("treeFileActions");
       const treeFileName = document.getElementById("treeFileName");
       if (!treeFileInput || !treeFileActions) return;
-      treeFileInput.style.display = hasTreeFile ? "none" : "";
+      treeFileInput.style.display = (hasTreeFile || isProjectReadOnly()) ? "none" : "";
       treeFileActions.style.display = hasTreeFile ? "flex" : "none";
+      const removeTreeFile = document.getElementById("removeTreeFile");
+      if (removeTreeFile) removeTreeFile.style.display = isProjectReadOnly() ? "none" : "";
       if (treeFileName) {
         treeFileName.textContent = hasTreeFile ? (window.currentTreeFileName || "已上传谱系树") : "";
         treeFileName.title = hasTreeFile ? (window.currentTreeFileName || "") : "";
       }
     };
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
+      await Auth.init('#userStatus');
+
       if (!Auth.isLoggedIn()) {
         window.location.href = "index.html?login=true";
         return;
       }
 
-      Auth.init('#userStatus');
       Auth.bindProfileName('#userStatus');
 
       async function fetchProjectFromBackend(projectId) {
@@ -2422,10 +2508,16 @@
 
       const urlParams = new URLSearchParams(window.location.search);
       let projectId = urlParams.get("id");
+      isViewMode = urlParams.get("mode") === "view";
 
       document.querySelector(".page-buttons").style.display = "none";
 
       if (!projectId) {
+        if (isViewMode) {
+          pop_up(tx("projectEditor.viewMissingProject", "找不到项目ID，无法查看"), "r");
+          window.location.href = "language_map.html";
+          return;
+        }
         projectId = "proj_" + Date.now();
         sessionStorage.setItem("editingProjectId", projectId);
       }
@@ -2457,23 +2549,19 @@
         window.currentProject = existing || null;
 
         if (existing) {
-          if (currentUser && existing.authorId && existing.authorId !== currentUser.id) {
+          const isOwner = currentUser && existing.authorId && existing.authorId === currentUser.id;
+          const isAdmin = Auth.isAdmin();
+          const canViewPublicProject = isViewMode && existing.isPublic;
+
+          if (!isOwner && !isAdmin && !canViewPublicProject) {
             window.location.href = "projects.html";
             return;
           }
 
-          document.getElementById("infoPageTitle").textContent = "编辑项目";
-          document.getElementById("vocabPageTitle").textContent = "编辑项目";
           document.getElementById("projectName").value = existing.projectName || "未命名项目";
           document.getElementById("projectDesc").value = existing.projectDesc || "";
           document.getElementById("references").value = existing.references || "";
           originalDraft = JSON.stringify(existing);
-
-          if (existing.projectName) {
-            document.title = existing.projectName;
-          } else {
-            document.title = "新建项目";
-          }
 
           if (existing.projectType != null && existing.projectType !== "") {
             const ptValue = String(existing.projectType);
@@ -2520,10 +2608,13 @@
           loadVocabList();
           window.languages = getLanguages();
           markDraftSaved();
+          applyProjectMode();
         } else {
-          document.getElementById("infoPageTitle").textContent = "新建项目";
-          document.getElementById("vocabPageTitle").textContent = "新建项目";
-          document.title = "新建项目";
+          if (isViewMode) {
+            pop_up(tx("projectEditor.viewMissingProject", "找不到项目ID，无法查看"), "r");
+            window.location.href = "language_map.html";
+            return;
+          }
 
           addLanguageInput();
           addLanguageInput();
@@ -2532,6 +2623,7 @@
           window.setTreeFileUi(false);
           window.languages = getLanguages();
           markDraftSaved();
+          applyProjectMode();
         }
       })();
 
@@ -2549,7 +2641,10 @@
 
       window.languageContainer = languageContainer;
 
-      document.getElementById("addLanguageBtn").addEventListener("click", () => addLanguageInput());
+      document.getElementById("addLanguageBtn").addEventListener("click", () => {
+        if (isProjectReadOnly()) return;
+        addLanguageInput();
+      });
       window.languages = getLanguages();
       renderTimeConclusion();
 
@@ -2589,6 +2684,10 @@
       });
 
       treeFileInput.addEventListener("change", () => {
+        if (isProjectReadOnly()) {
+          treeFileInput.value = "";
+          return;
+        }
         const file = treeFileInput.files[0];
         if (!file) return;
 
@@ -2610,6 +2709,7 @@
       });
 
       removeTreeFile.addEventListener("click", () => {
+        if (isProjectReadOnly()) return;
         treeFileInput.value = "";
         if (window.tempTreeFile?.objectURL) {
           URL.revokeObjectURL(window.tempTreeFile.objectURL);
@@ -2622,6 +2722,7 @@
       });
 
       window.deleteVocab = function(id) {
+        if (isProjectReadOnly()) return;
         if (confirm("确定要删除该词汇吗？")) {
           const index = vocabData.findIndex(item => item.id === id);
           if (index !== -1) {
@@ -2640,6 +2741,7 @@
       };
 
       document.getElementById("addVocabBtn").addEventListener("click", () => {
+        if (isProjectReadOnly()) return;
         editingVocabIndex = null;
         resetVocabWizardState();
         currentPage = 2;
@@ -3074,6 +3176,13 @@
     });
 
     window.saveDraft = async function saveDraft() {
+      if (isProjectReadOnly()) {
+        if (Auth.isAdmin()) {
+          unlockProjectEditMode();
+        }
+        return false;
+      }
+
       const currentId = sessionStorage.getItem("editingProjectId");
       if (!currentId) return false;
 
@@ -3259,6 +3368,12 @@
 
       vocabData.slice(start, start + pageSize).forEach((item, index) => {
         const row = document.createElement("tr");
+        const actionHtml = isProjectReadOnly()
+          ? "--"
+          : `
+            <button type="button" class="edit-button" data-id="${item.id}">编辑</button>
+            <button type="button" class="delete-button" onclick="deleteVocab(${item.id})">删除</button>
+          `;
 
         row.innerHTML = `
           <td>${item.word || "--"}</td>
@@ -3275,10 +3390,7 @@
             }
           </td>
           <td>${item.recordedAt || "--"}</td>
-          <td>
-            <button type="button" class="edit-button" data-id="${item.id}">编辑</button>
-            <button type="button" class="delete-button" onclick="deleteVocab(${item.id})">删除</button>
-          </td>
+          <td>${actionHtml}</td>
         `;
 
         tbody.appendChild(row);
@@ -3286,8 +3398,10 @@
         document.getElementById("vocabListTitle").textContent = `词汇列表（已有 ${vocabData.length} 个词汇）`;
 
         const editBtn = row.querySelector(".edit-button");
+        if (!editBtn) return;
 
         editBtn.addEventListener("click", () => {
+          if (isProjectReadOnly()) return;
           const vocabId = parseInt(editBtn.getAttribute("data-id"));
           const vocab = vocabData.find(item => item.id === vocabId);
           editingVocabIndex = vocabData.findIndex(item => item.id === vocabId);
@@ -3396,6 +3510,8 @@
     }
 
     window.saveVocab = async function saveVocab() {
+      if (isProjectReadOnly()) return;
+
       const loggedUser = JSON.parse(sessionStorage.getItem("loggedUser") || "{}");
       const category = document.querySelector('input[name="category"]:checked')?.value;
       const word = getSelectedWord();

@@ -305,6 +305,24 @@
       background-color: rgba(59, 130, 246, 0.05);
     }
 
+    .public-project-actions {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .delete-public-project-btn {
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #ef4444;
+    }
+
+    .delete-public-project-btn:hover {
+      border-color: #ef4444;
+      color: #ef4444;
+      background-color: rgba(239, 68, 68, 0.08);
+    }
+
     .pagination-container {
       display: none;
       justify-content: center;
@@ -495,8 +513,8 @@
     if (logo) logo.src = "img/EdUHK_logo.png"; 
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    Auth.init('#userStatus');
+  document.addEventListener("DOMContentLoaded", async () => {
+    await Auth.init('#userStatus');
     Auth.bindProfileName('#userStatus');
 
     const profile = document.getElementById("profile");
@@ -606,6 +624,10 @@
 
     let projectMarkers = [];
     let publicProjectDetailsCache = null;
+
+    function tx(key, fallback, vars = {}) {
+      return window.I18N ? I18N.t(key, fallback, vars) : fallback;
+    }
 
     async function fetchPublicProjectDetails() {
       if (publicProjectDetailsCache) return publicProjectDetailsCache;
@@ -763,24 +785,73 @@
           }
         }
 
-        const action = `<button type="button" class="view-btn" data-id="${p.id}">查看</button>`;
+        const action = `
+          <div class="public-project-actions">
+            <button type="button" class="view-btn" data-id="${escHTML(p.id)}">${tx("common.actions.view", "查看")}</button>
+            ${
+              Auth.isAdmin()
+                ? `<button type="button" class="view-btn delete-public-project-btn" data-id="${escHTML(p.id)}">${tx("common.actions.delete", "删除")}</button>`
+                : ""
+            }
+          </div>
+        `;
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${name}</td>
-          <td>${wordCount}</td>
-          <td>${researchTarget}</td>
-          <td>${author}</td>
-          <td>${updatedText}</td>
+          <td>${escHTML(name)}</td>
+          <td>${escHTML(wordCount)}</td>
+          <td>${escHTML(researchTarget)}</td>
+          <td>${escHTML(author)}</td>
+          <td>${escHTML(updatedText)}</td>
           <td>${action}</td>
         `;
         tableBody.appendChild(tr);
       });
 
-      tableBody.querySelectorAll(".view-btn").forEach(btn => {
+      tableBody.querySelectorAll(".view-btn:not(.delete-public-project-btn)").forEach(btn => {
         btn.addEventListener("click", () => {
           const id = btn.getAttribute("data-id");
-          focusOnProject(id);
+          const project = pageRows.find(p => String(p.id) === String(id));
+          if (!project?.isPublic) {
+            pop_up(tx("research.viewNotPublic", "该项目不是公开项目，无法查看"), "r");
+            return;
+          }
+          if (!Auth.isLoggedIn()) {
+            Auth.showLogin();
+            pop_up(tx("research.loginRequiredToView", "请先登录后查看项目"), "b");
+            return;
+          }
+          window.location.href = `modify_project.html?id=${encodeURIComponent(id)}&mode=view`;
+        });
+      });
+
+      tableBody.querySelectorAll(".delete-public-project-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-id");
+          if (!Auth.isAdmin()) {
+            pop_up(tx("contributors.messages.adminRequired", "需要管理员权限"), "r");
+            return;
+          }
+          if (!confirm(tx("research.deletePublicProjectConfirm", "确定要删除该公开项目吗？"))) return;
+
+          try {
+            const resp = await apiFetch(`${PROJECTS_API_BASE}/${encodeURIComponent(id)}`, {
+              method: "DELETE"
+            });
+            if (!resp.ok) {
+              console.error("删除公开项目失败", resp.status, await resp.text());
+              pop_up(tx("research.deletePublicProjectFailed", "删除公开项目失败，请检查网络连接"), "r");
+              return;
+            }
+            pop_up(tx("research.deletePublicProjectSuccess", "已删除公开项目"), "g");
+            publicProjectDetailsCache = null;
+            await renderPublicProjects();
+            await drawProjectTimeline();
+            await loadMapMarkers();
+          } catch (err) {
+            console.error("调用删除公开项目接口出错:", err);
+            pop_up(tx("research.deletePublicProjectFailed", "删除公开项目失败，请检查网络连接"), "r");
+          }
         });
       });
 
