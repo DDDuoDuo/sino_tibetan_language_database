@@ -2972,7 +2972,7 @@
         }
 
         try {
-          const resp = await fetch("/api/projects", {
+          const resp = await apiFetch(`${API_BASE}/projects`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(draftForBackend)
