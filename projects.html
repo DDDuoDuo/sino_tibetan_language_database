@@ -128,8 +128,6 @@
     }
 
     .edit-button,
-    .publish-button,
-    .unpublish-button,
     .page-button {
       padding: 6px 16px;
       background-color: transparent;
@@ -142,8 +140,6 @@
     }
     
     .edit-button:hover,
-    .publish-button:hover,
-    .unpublish-button:hover,
     .page-button:hover {
       border-color: var(--primary-blue);
       color: var(--primary-blue);
@@ -166,6 +162,26 @@
       border-color: #ef4444;
       color: #ef4444;
       background-color: rgba(239, 68, 68, 0.08);
+    }
+
+    .publish-button,
+    .unpublish-button {
+      padding: 6px 16px;
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      border-color: rgba(245, 158, 11, 0.55);
+      color: #d97706;
+      transition: all 0.2s;
+    }
+
+    .publish-button:hover,
+    .unpublish-button:hover {
+      border-color: #d97706;
+      color: #d97706;
+      background-color: rgba(245, 158, 11, 0.08);
     }
 
     .pagination-container {
