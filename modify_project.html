@@ -2163,6 +2163,14 @@
       return out;
     }
 
+    window.setTreeFileUi = function setTreeFileUi(hasTreeFile) {
+      const treeFileInput = document.getElementById("treeFile");
+      const treeFileActions = document.getElementById("treeFileActions");
+      if (!treeFileInput || !treeFileActions) return;
+      treeFileInput.style.display = hasTreeFile ? "none" : "";
+      treeFileActions.style.display = hasTreeFile ? "flex" : "none";
+    };
+
     document.addEventListener("DOMContentLoaded", () => {
       if (!Auth.isLoggedIn()) {
         window.location.href = "index.html?login=true";
@@ -2281,11 +2289,6 @@
       const removeTreeFile = document.getElementById("removeTreeFile");
       const treeFileActions = document.getElementById("treeFileActions");
 
-      function setTreeFileUi(hasTreeFile) {
-        treeFileInput.style.display = hasTreeFile ? "none" : "";
-        treeFileActions.style.display = hasTreeFile ? "flex" : "none";
-      }
-
       (async () => {
         const existing = await fetchProjectFromBackend(projectId);
         window.currentProject = existing || null;
@@ -2326,9 +2329,9 @@
           }
 
           if (existing.hasTreeFile && !isTreeFileRemoved) {
-            setTreeFileUi(true);
+            window.setTreeFileUi(true);
           } else {
-            setTreeFileUi(false);
+            window.setTreeFileUi(false);
           }
 
           if (existing.languageCoords && Array.isArray(existing.languageCoords) && existing.languageCoords.length) {
@@ -2357,7 +2360,7 @@
           addLanguageInput();
           vocabData = [];
           loadVocabList();
-          setTreeFileUi(false);
+          window.setTreeFileUi(false);
         }
       })();
 
@@ -2423,7 +2426,7 @@
         window.currentTreeDataURL = null;
         window.currentTreeFileName = file.name;
         isTreeFileRemoved = false;
-        setTreeFileUi(true);
+        window.setTreeFileUi(true);
       });
 
       removeTreeFile.addEventListener("click", () => {
@@ -2434,7 +2437,7 @@
         window.tempTreeFile = null;
         window.currentTreeDataURL = null;
         window.currentTreeFileName = null;
-        setTreeFileUi(false);
+        window.setTreeFileUi(false);
         isTreeFileRemoved = true;
       });
 
@@ -3005,7 +3008,7 @@
                     window.tempTreeFile = null;
                     window.currentTreeFileName = null;
                     isTreeFileRemoved = false;
-                    setTreeFileUi(true);
+                    window.setTreeFileUi(true);
                   }
                 } catch (err) {
                   console.error("调用树图文件上传接口出错:", err);
@@ -3023,7 +3026,7 @@
                   } else {
                     savedHasTreeFile = false;
                     isTreeFileRemoved = false;
-                    setTreeFileUi(false);
+                    window.setTreeFileUi(false);
                   }
                 } catch (err) {
                   console.error("调用树图文件删除接口出错:", err);

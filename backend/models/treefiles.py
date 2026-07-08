@@ -7,25 +7,49 @@ from werkzeug.utils import secure_filename
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads", "treefiles")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+def _safe_file_path(stored_name: str) -> Optional[str]:
+    """Resolve a DB stored_name inside UPLOAD_DIR without allowing path traversal."""
+    if not stored_name:
+        return None
+    normalized = os.path.normpath(stored_name).replace("\\", "/")
+    if normalized.startswith("../") or normalized == ".." or os.path.isabs(normalized):
+        return None
+
+    upload_root = os.path.abspath(UPLOAD_DIR)
+    path = os.path.abspath(os.path.join(upload_root, normalized))
+    if os.path.commonpath([upload_root, path]) != upload_root:
+        return None
+    return path
+
 def _save_file_to_disk(file_storage, project_id: str) -> tuple:
     """Save an uploaded file to disk. Returns (file_name, stored_name, mime_type)."""
     original_name = file_storage.filename or "treefile"
     mime_type = file_storage.content_type or "application/octet-stream"
-    stored_name = secure_filename(original_name) or f"treefile_{uuid.uuid4().hex[:8]}"
-    base, ext = os.path.splitext(stored_name)
+    safe_project_id = secure_filename(project_id) or uuid.uuid4().hex
+    safe_file_name = secure_filename(original_name) or f"treefile_{uuid.uuid4().hex[:8]}"
+    project_dir = os.path.join(UPLOAD_DIR, safe_project_id)
+    os.makedirs(project_dir, exist_ok=True)
 
-    if os.path.exists(os.path.join(UPLOAD_DIR, stored_name)):
-        stored_name = f"{base}_{uuid.uuid4().hex[:8]}{ext}"
+    stored_name = f"{safe_project_id}/{safe_file_name}"
+    path = _safe_file_path(stored_name)
+    if not path:
+        raise ValueError("Invalid treefile path")
 
-    path = os.path.join(UPLOAD_DIR, stored_name)
+    if os.path.exists(path):
+        base, ext = os.path.splitext(safe_file_name)
+        stored_name = f"{safe_project_id}/{base}_{uuid.uuid4().hex[:8]}{ext}"
+        path = _safe_file_path(stored_name)
+        if not path:
+            raise ValueError("Invalid treefile path")
+
     file_storage.save(path)
     return original_name, stored_name, mime_type
 
 def _delete_file_from_disk(stored_name: str) -> None:
     """Remove a file from disk if it exists."""
-    if not stored_name:
+    path = _safe_file_path(stored_name)
+    if not path:
         return
-    path = os.path.join(UPLOAD_DIR, stored_name)
     if os.path.isfile(path):
         os.remove(path)
 
@@ -96,7 +120,7 @@ def get_project_tree_file(project_id: str) -> Optional[Dict]:
 
 def get_file_path(stored_name: str) -> Optional[str]:
     """Return the full disk path for a stored file, or None if missing."""
-    if not stored_name:
+    path = _safe_file_path(stored_name)
+    if not path:
         return None
-    path = os.path.join(UPLOAD_DIR, stored_name)
     return path if os.path.isfile(path) else None
