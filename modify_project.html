@@ -739,7 +739,7 @@
           <div class="form-buttons">
             <div class="left-buttons">
                 <button type="button" class="nav-button" id="leftBtn" onclick="saveDraft()">保存草稿</button>
-                <button type="button" class="nav-button" id="leftBtn" onclick="window.location.href = 'projects.html'">返回</button>
+                <button type="button" class="nav-button" id="leftBtn" onclick="returnToProjectsSafely()">返回</button>
             </div>
           </div>
         </form>
@@ -844,7 +844,7 @@
         <div class="form-buttons">
           <div class="left-buttons">
             <button type="button" class="nav-button" id="leftBtn" onclick="saveDraft()">保存草稿</button>
-            <button type="button" class="nav-button" id="leftBtn" onclick="window.location.href = 'projects.html'">返回</button>
+            <button type="button" class="nav-button" id="leftBtn" onclick="returnToProjectsSafely()">返回</button>
           </div>
         </div>
       </form>
@@ -881,7 +881,7 @@
     <div class="page-buttons">
       <div class="left-buttons">
         <button type="button" class="nav-button" onclick="saveVocab()">保存并返回</button>
-        <button type="button" class="nav-button" onclick="showPage(1)">返回</button>
+        <button type="button" class="nav-button" onclick="returnToVocabListSafely()">返回</button>
       </div>
       <div class="right-buttons">
         <button type="button" class="nav-button nextBtn">下一页</button>
@@ -977,7 +977,7 @@
     <div class="form-buttons">
       <div class="left-buttons">
         <button type="button" class="nav-button" onclick="saveVocab()">保存并返回</button>
-        <button type="button" class="nav-button" onclick="showPage(1)">返回</button>
+        <button type="button" class="nav-button" onclick="returnToVocabListSafely()">返回</button>
       </div>
     </div>
   </div>
@@ -1016,7 +1016,7 @@
     <div class="form-buttons">
       <div class="left-buttons">
         <button type="button" class="nav-button" onclick="saveVocab()">保存并返回</button>
-        <button type="button" class="nav-button" onclick="showPage(1)">返回</button>
+        <button type="button" class="nav-button" onclick="returnToVocabListSafely()">返回</button>
       </div>
     </div>
   </div>
@@ -1096,7 +1096,7 @@
     <div class="form-buttons">
       <div class="left-buttons">
         <button type="button" class="nav-button" onclick="saveVocab()">保存并返回</button>
-        <button type="button" class="nav-button" onclick="showPage(1)">返回</button>
+        <button type="button" class="nav-button" onclick="returnToVocabListSafely()">返回</button>
       </div>
     </div>
   </div>
@@ -1174,7 +1174,7 @@
       </div>
       <div class="right-buttons">
         <button type="button" class="nav-button" onclick="saveVocab()">保存并返回</button>
-        <button type="button" class="nav-button" onclick="showPage(1)">返回</button>
+        <button type="button" class="nav-button" onclick="returnToVocabListSafely()">返回</button>
       </div>
     </div>
   </div>
@@ -1268,6 +1268,9 @@
     let editingVocabIndex = null;
 
     let originalDraft = null;
+    let lastSavedSnapshot = null;
+    let vocabEditBaselineSnapshot = null;
+    let suppressUnsavedWarning = false;
     window.currentProject = null;
 
     function updateRemoveButtons() {
@@ -1380,6 +1383,118 @@
       const low = numberToEraYear(late);
       return { upper: up.year, upperEra: up.era, lower: low.year, lowerEra: low.era, early, late };
     }
+
+    function cloneForSnapshot(value) {
+      return JSON.parse(JSON.stringify(value ?? null));
+    }
+
+    function getProjectTimeRangeForSave() {
+      const computed = normalizeTimeRange({
+        upper: document.getElementById('projectTimeUpper')?.value || '4000',
+        upperEra: document.getElementById('projectTimeUpperEra')?.value || 'BC',
+        lower: document.getElementById('projectTimeLower')?.value || '5500',
+        lowerEra: document.getElementById('projectTimeLowerEra')?.value || 'AD'
+      });
+
+      return computed ? {
+        upper: computed.upper,
+        upperEra: computed.upperEra,
+        lower: computed.lower,
+        lowerEra: computed.lowerEra
+      } : { upper: '', upperEra: 'BC', lower: '', lowerEra: 'AD' };
+    }
+
+    function getTreeFileSnapshot() {
+      let hasTreeFile = !!(window.currentProject?.hasTreeFile ?? 0);
+      if (window.tempTreeFile?.file) {
+        hasTreeFile = true;
+      } else if (isTreeFileRemoved) {
+        hasTreeFile = false;
+      }
+
+      return {
+        hasTreeFile,
+        pendingUpload: window.tempTreeFile?.file ? {
+          name: window.tempTreeFile.file.name,
+          type: window.tempTreeFile.file.type,
+          size: window.tempTreeFile.file.size,
+          lastModified: window.tempTreeFile.file.lastModified
+        } : null,
+        pendingDelete: !!isTreeFileRemoved
+      };
+    }
+
+    function getDraftSnapshot() {
+      return JSON.stringify({
+        projectName: document.getElementById("projectName")?.value.trim() || "",
+        projectDesc: document.getElementById("projectDesc")?.value.trim() || "",
+        references: document.getElementById("references")?.value.trim() || "",
+        projectType: document.querySelector('input[name="projectType"]:checked')?.value || null,
+        languages: getLanguages(),
+        languageCoords: getLanguageCoords(),
+        projectTimeRange: getProjectTimeRangeForSave(),
+        vocabList: cloneForSnapshot(vocabData || []),
+        treeFile: getTreeFileSnapshot()
+      });
+    }
+
+    function markDraftSaved() {
+      lastSavedSnapshot = getDraftSnapshot();
+    }
+
+    function hasUnsavedChanges() {
+      return lastSavedSnapshot !== null && getDraftSnapshot() !== lastSavedSnapshot;
+    }
+
+    function getRadioValue(name) {
+      return document.querySelector(`input[name="${name}"]:checked`)?.value || null;
+    }
+
+    function getCurrentVocabDraftSnapshot() {
+      return JSON.stringify({
+        editingVocabIndex,
+        category: getRadioValue("category"),
+        word: getSelectedWord(),
+        wordData: cloneForSnapshot(collectSyllablesFromPage2()),
+        compData: cloneForSnapshot(collectComparisonFromPage3()),
+        matchType: getRadioValue("matchType"),
+        relaxedType: getRadioValue("relaxedType"),
+        histLevel: getRadioValue("histLevel"),
+        explainable: getRadioValue("explainable"),
+        cognate: getRadioValue("cognate"),
+        originType: getRadioValue("originType"),
+        borrow: cloneForSnapshot(collectBorrowFromLastPage()),
+        timeInfo: cloneForSnapshot(collectTimeFromLastPage())
+      });
+    }
+
+    function markVocabWizardClean() {
+      vocabEditBaselineSnapshot = getCurrentVocabDraftSnapshot();
+    }
+
+    function hasUnsavedVocabWizardChanges() {
+      return vocabEditBaselineSnapshot !== null && getCurrentVocabDraftSnapshot() !== vocabEditBaselineSnapshot;
+    }
+
+    window.returnToProjectsSafely = function returnToProjectsSafely() {
+      if (!hasUnsavedChanges() || confirm("当前项目有未保存的修改，确定要离开吗？")) {
+        suppressUnsavedWarning = true;
+        window.location.href = "projects.html";
+      }
+    };
+
+    window.returnToVocabListSafely = function returnToVocabListSafely() {
+      if (!hasUnsavedVocabWizardChanges() || confirm("当前词汇有未保存的修改，确定要返回吗？")) {
+        vocabEditBaselineSnapshot = null;
+        showPage(1);
+      }
+    };
+
+    window.addEventListener("beforeunload", (event) => {
+      if (suppressUnsavedWarning || (!hasUnsavedChanges() && !hasUnsavedVocabWizardChanges())) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
 
     function computeSuggestedProjectTime(vocabData) {
       if (!Array.isArray(vocabData) || vocabData.length === 0) return null;
@@ -2403,6 +2518,8 @@
 
           vocabData = Array.isArray(existing.vocabList) ? existing.vocabList : [];
           loadVocabList();
+          window.languages = getLanguages();
+          markDraftSaved();
         } else {
           document.getElementById("infoPageTitle").textContent = "新建项目";
           document.getElementById("vocabPageTitle").textContent = "新建项目";
@@ -2413,6 +2530,8 @@
           vocabData = [];
           loadVocabList();
           window.setTreeFileUi(false);
+          window.languages = getLanguages();
+          markDraftSaved();
         }
       })();
 
@@ -2531,6 +2650,7 @@
         if (sel) sel.innerHTML = `<option value="">请选择词汇</option>`;
 
         populateSyllablePage(null, null);
+        markVocabWizardClean();
       });
 
       window.wordOptions = {};
@@ -2955,7 +3075,7 @@
 
     window.saveDraft = async function saveDraft() {
       const currentId = sessionStorage.getItem("editingProjectId");
-      if (!currentId) return;
+      if (!currentId) return false;
 
       const languageInputs = document.querySelectorAll(".language-input");
       const languages = getLanguages();
@@ -2968,19 +3088,7 @@
       const references = document.getElementById("references").value.trim();
       const projectType = document.querySelector('input[name="projectType"]:checked')?.value || null;
 
-      let computed = normalizeTimeRange({
-          upper: document.getElementById('projectTimeUpper')?.value || '4000',
-          upperEra: document.getElementById('projectTimeUpperEra')?.value || 'BC',
-          lower: document.getElementById('projectTimeLower')?.value || '5500',
-          lowerEra: document.getElementById('projectTimeLowerEra')?.value || 'AD'
-        });
-
-      const projectTimeRange = computed ? {
-        upper: computed.upper,
-        upperEra: computed.upperEra,
-        lower: computed.lower,
-        lowerEra: computed.lowerEra
-      } : { upper: '', upperEra: 'BC', lower: '', lowerEra: 'AD' };
+      const projectTimeRange = getProjectTimeRangeForSave();
 
       let hasTreeFile = !!(existing?.hasTreeFile ?? 0);
 
@@ -2994,6 +3102,7 @@
       const isPublic = existing?.isPublic ?? false;
 
       async function finalizeSave() {
+        let saved = false;
         const baseFields = {
           id: currentId,
           projectName,
@@ -3106,7 +3215,12 @@
               }
             }
 
-            if (currentPage <= 1 && !treeFileSyncFailed && !backendResponseInvalid) {
+            if (data && data.project && !treeFileSyncFailed && !backendResponseInvalid) {
+              markDraftSaved();
+              saved = true;
+            }
+
+            if (currentPage <= 1 && saved) {
               pop_up("草稿已保存并同步到服务器", "g");
             }
           }
@@ -3119,9 +3233,10 @@
 
         sessionStorage.removeItem("pendingAuthorId");
         sessionStorage.removeItem("pendingAuthorName");
+        return saved;
       }
 
-      await finalizeSave();
+      return await finalizeSave();
       // window.tempTreeFile = null;
       // window.currentTreeDataURL = null;
     };
@@ -3269,6 +3384,7 @@
             const cur_entry = (typeof editingVocabIndex === 'number') ? vocabData[editingVocabIndex] : null;
             populateBorrowPage(cur_entry || {});
             populateTimeRange(cur_entry || {});
+            markVocabWizardClean();
           }
         });
       });
@@ -3279,7 +3395,7 @@
       document.querySelector(".pagination-container").style.display = (totalVocabPages > 1) ? "flex" : "none";
     }
 
-    window.saveVocab = function saveVocab() {
+    window.saveVocab = async function saveVocab() {
       const loggedUser = JSON.parse(sessionStorage.getItem("loggedUser") || "{}");
       const category = document.querySelector('input[name="category"]:checked')?.value;
       const word = getSelectedWord();
@@ -3368,7 +3484,8 @@
         vocabData.push(vocabEntry);
       }
 
-      saveDraft();
+      vocabEditBaselineSnapshot = null;
+      await saveDraft();
       showPage(1);
       loadVocabList(vocabData);
     }
