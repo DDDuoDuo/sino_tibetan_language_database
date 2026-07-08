@@ -108,9 +108,9 @@
     "loadPublicProjectsFailed": "Failed to load public projects. Please check your network connection",
     "loginRequiredToView": "Please log in before viewing the project",
     "viewNotPublic": "This project is not public and cannot be viewed",
-    "deletePublicProjectConfirm": "Are you sure you want to delete this public project?",
-    "deletePublicProjectFailed": "Failed to delete the public project. Please check your network connection",
-    "deletePublicProjectSuccess": "Public project deleted",
+    "unpublishPublicProjectConfirm": "Are you sure you want to make this project private?",
+    "unpublishPublicProjectFailed": "Failed to make the project private. Please check your network connection",
+    "unpublishPublicProjectSuccess": "Project is now private",
     "dynasties": [
       "Prehistoric",
       "Shang",

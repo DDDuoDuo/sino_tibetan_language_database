@@ -108,9 +108,9 @@
     "loadPublicProjectsFailed": "加载公开项目失败，请检查网络连接",
     "loginRequiredToView": "请先登录后查看项目",
     "viewNotPublic": "该项目不是公开项目，无法查看",
-    "deletePublicProjectConfirm": "确定要删除该公开项目吗？",
-    "deletePublicProjectFailed": "删除公开项目失败，请检查网络连接",
-    "deletePublicProjectSuccess": "已删除公开项目",
+    "unpublishPublicProjectConfirm": "确定要取消公开该项目吗？",
+    "unpublishPublicProjectFailed": "取消公开项目失败，请检查网络连接",
+    "unpublishPublicProjectSuccess": "已取消公开项目",
     "dynasties": [
       "史前",
       "商",
