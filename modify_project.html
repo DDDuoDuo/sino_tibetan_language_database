@@ -302,7 +302,6 @@
     }
 
     .vocab-table-wrapper {
-      max-height: 60vh;
       overflow: auto;
       max-width: 1000px;
       border: 1px solid var(--border-color);
@@ -354,7 +353,6 @@
 
     .view-button,
     .edit-button,
-    .delete-button,
     .page-button {
       padding: 6px 16px;
       background-color: transparent;
@@ -368,11 +366,23 @@
     
     .view-button:hover,
     .edit-button:hover,
-    .delete-button:hover,
     .page-button:hover {
       border-color: var(--primary-blue);
       color: var(--primary-blue);
       background-color: rgba(59, 130, 246, 0.05);
+    }
+
+    .delete-button {
+      padding: 6px 16px;
+      font-size: 12px;
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #ef4444;
+    }
+
+    .delete-button:hover {
+      border-color: #ef4444;
+      color: #ef4444;
+      background-color: rgba(239, 68, 68, 0.08);
     }
 
     .group-label {
@@ -801,6 +811,12 @@
           <div class="hint-text">*当“放宽的完全普遍对应”显示为“Y”时，可能可以认为也属于“完全普遍对应”，即目标语言没有分化</div>
         </div>
 
+        <div class="pagination-container">
+          <button type="button" id="prevVocabPage" class="page-button">←</button>
+          <span id="pageIndicator">第 1 页</span>
+          <button type="button" id="nextVocabPage" class="page-button">→</button>
+        </div>
+
         <div class="form-group time-range-section" id="projectTimeSection">
           <div class="time-range-title">根据录入的时间信息，请确定本项目中目标语言的分化时间：</div>
 
@@ -824,12 +840,6 @@
           </div>
 
           <div class="hint-text">*请自行确定上限与下限时间</div>
-        </div>
-
-        <div class="pagination-container">
-          <button type="button" id="prevVocabPage" class="page-button">←</button>
-          <span id="pageIndicator">第 1 页</span>
-          <button type="button" id="nextVocabPage" class="page-button">→</button>
         </div>
 
         <div class="form-buttons">

@@ -128,7 +128,6 @@
     }
 
     .edit-button,
-    .delete-button,
     .publish-button,
     .unpublish-button,
     .page-button {
@@ -143,13 +142,25 @@
     }
     
     .edit-button:hover,
-    .delete-button:hover,
     .publish-button:hover,
     .unpublish-button:hover,
     .page-button:hover {
       border-color: var(--primary-blue);
       color: var(--primary-blue);
       background-color: rgba(59, 130, 246, 0.05);
+    }
+
+    .delete-button {
+      padding: 6px 16px;
+      font-size: 12px;
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #ef4444;
+    }
+
+    .delete-button:hover {
+      border-color: #ef4444;
+      color: #ef4444;
+      background-color: rgba(239, 68, 68, 0.08);
     }
 
     .pagination-container {
@@ -488,7 +499,7 @@
         if (!confirm("确定要删除该项目吗？")) return;
 
         try {
-          const resp = await fetch(
+          const resp = await apiFetch(
             `/api/projects/${encodeURIComponent(deleteId)}`,
             { method: "DELETE" }
           );
@@ -511,7 +522,7 @@
       btn.addEventListener("click", async (e) => {
         const id = e.currentTarget.getAttribute("data-id");
         try {
-          const resp = await fetch(
+          const resp = await apiFetch(
             `/api/projects/${encodeURIComponent(id)}/publish`,
             { method: "POST" }
           );
@@ -533,7 +544,7 @@
       btn.addEventListener("click", async (e) => {
         const id = e.currentTarget.getAttribute("data-id");
         try {
-          const resp = await fetch(
+          const resp = await apiFetch(
             `/api/projects/${encodeURIComponent(id)}/unpublish`,
             { method: "POST" }
           );
