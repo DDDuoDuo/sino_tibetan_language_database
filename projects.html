@@ -517,7 +517,13 @@
     document.querySelectorAll(".delete-button").forEach((button) => {
       button.addEventListener("click", async (e) => {
         const deleteId = e.target.getAttribute("data-id");
-        if (!confirm("确定要删除该项目吗？")) return;
+        const confirmed = await Warning.confirm({
+          message: "确定要删除该项目吗？",
+          type: "r",
+          confirmText: "删除",
+          cancelText: "取消"
+        });
+        if (!confirmed) return;
 
         try {
           const resp = await apiFetch(

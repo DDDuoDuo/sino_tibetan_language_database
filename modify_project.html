@@ -1574,15 +1574,27 @@
       return vocabEditBaselineSnapshot !== null && getCurrentVocabDraftSnapshot() !== vocabEditBaselineSnapshot;
     }
 
-    window.returnToProjectsSafely = function returnToProjectsSafely() {
-      if (!hasUnsavedChanges() || confirm("当前项目有未保存的修改，确定要离开吗？")) {
+    window.returnToProjectsSafely = async function returnToProjectsSafely() {
+      const confirmed = !hasUnsavedChanges() || await Warning.confirm({
+        message: "当前项目有未保存的修改，确定要离开吗？",
+        type: "b",
+        confirmText: "离开",
+        cancelText: "取消"
+      });
+      if (confirmed) {
         suppressUnsavedWarning = true;
         window.location.href = isViewMode ? "language_map.html" : "projects.html";
       }
     };
 
-    window.returnToVocabListSafely = function returnToVocabListSafely() {
-      if (!hasUnsavedVocabWizardChanges() || confirm("当前词汇有未保存的修改，确定要返回吗？")) {
+    window.returnToVocabListSafely = async function returnToVocabListSafely() {
+      const confirmed = !hasUnsavedVocabWizardChanges() || await Warning.confirm({
+        message: "当前词汇有未保存的修改，确定要返回吗？",
+        type: "b",
+        confirmText: "返回",
+        cancelText: "取消"
+      });
+      if (confirmed) {
         vocabEditBaselineSnapshot = null;
         showPage(1);
       }
@@ -2736,9 +2748,15 @@
         isTreeFileRemoved = true;
       });
 
-      window.deleteVocab = function(id) {
+      window.deleteVocab = async function(id) {
         if (isProjectReadOnly()) return;
-        if (confirm("确定要删除该词汇吗？")) {
+        const confirmed = await Warning.confirm({
+          message: "确定要删除该词汇吗？",
+          type: "r",
+          confirmText: "删除",
+          cancelText: "取消"
+        });
+        if (confirmed) {
           const index = vocabData.findIndex(item => item.id === id);
           if (index !== -1) {
             vocabData.splice(index, 1);

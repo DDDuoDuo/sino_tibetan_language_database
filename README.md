@@ -53,3 +53,30 @@
 
 如有任何问题或建议，欢迎联系：
 **hongdiding@gmail.com**
+
+---
+
+## 运维备份 | Database Backups
+
+服务器 MySQL 备份脚本位于 `scripts/backup_mysql.sh`。脚本会读取 `/language/stsplit/backend/.env` 中的数据库配置，将压缩后的 `.sql.gz` 文件保存到 `/language/stsplit/backups/mysql/`，并写入 `backup.log`。备份文件不会自动删除。
+
+首次部署到服务器后：
+
+```bash
+sudo mkdir -p /language/stsplit/scripts /language/stsplit/backups/mysql
+sudo cp scripts/backup_mysql.sh /language/stsplit/scripts/backup_mysql.sh
+sudo chmod +x /language/stsplit/scripts/backup_mysql.sh
+sudo /language/stsplit/scripts/backup_mysql.sh
+```
+
+安装每周一 03:00 自动备份：
+
+```bash
+(sudo crontab -l 2>/dev/null; echo "0 3 * * 1 /language/stsplit/scripts/backup_mysql.sh") | sudo crontab -
+```
+
+从服务器拉取备份到本机：
+
+```bash
+scripts/pull_mysql_backups.sh renjun@47.113.104.70
+```

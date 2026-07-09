@@ -832,7 +832,13 @@
             pop_up(tx("contributors.messages.adminRequired", "需要管理员权限"), "r");
             return;
           }
-          if (!confirm(tx("research.unpublishPublicProjectConfirm", "确定要取消公开该项目吗？"))) return;
+          const confirmed = await Warning.confirm({
+            message: tx("research.unpublishPublicProjectConfirm", "确定要取消公开该项目吗？"),
+            type: "b",
+            confirmText: tx("common.actions.unpublish", "取消公开"),
+            cancelText: tx("common.actions.cancel", "取消")
+          });
+          if (!confirmed) return;
 
           try {
             const resp = await apiFetch(`${PROJECTS_API_BASE}/${encodeURIComponent(id)}/unpublish`, {

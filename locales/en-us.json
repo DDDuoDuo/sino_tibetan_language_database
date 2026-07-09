@@ -30,8 +30,13 @@
       "remove": "Remove",
       "publish": "Make Public",
       "unpublish": "Make Private",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
       "exportCsv": "Export CSV File",
       "close": "Close"
+    },
+    "confirm": {
+      "title": "Please Confirm"
     },
     "status": {
       "loadingFailed": "Loading failed",

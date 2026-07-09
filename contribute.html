@@ -375,7 +375,13 @@
                 btn.addEventListener("click", async () => {
                     const userId = btn.getAttribute("data-id");
                     const next = btn.getAttribute("data-next");
-                    if (confirm(tx("contributors.messages.updateConfirm", "确定要修改此用户的帐户类型？"))) {
+                    const confirmed = await Warning.confirm({
+                        message: tx("contributors.messages.updateConfirm", "确定要修改此用户的帐户类型？"),
+                        type: "b",
+                        confirmText: tx("common.actions.save", "保存"),
+                        cancelText: tx("common.actions.cancel", "取消")
+                    });
+                    if (confirmed) {
                         try {
                             const resp = await apiFetch(`${API_BASE}/contributors/${encodeURIComponent(userId)}/account-type`, {
                                 method: "POST",

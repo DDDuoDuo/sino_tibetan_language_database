@@ -30,8 +30,13 @@
       "remove": "移除",
       "publish": "设为公开",
       "unpublish": "取消公开",
+      "confirm": "确定",
+      "cancel": "取消",
       "exportCsv": "导出 CSV 文件",
       "close": "关闭"
+    },
+    "confirm": {
+      "title": "请确认"
     },
     "status": {
       "loadingFailed": "加载失败",

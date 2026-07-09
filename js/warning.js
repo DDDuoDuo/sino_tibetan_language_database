@@ -164,6 +164,94 @@
       }, AUTO_DISMISS_MS);
   }    
 
+  function translateMessage(message) {
+    if (window.I18N && typeof I18N.translateLiteral === "function") {
+      return I18N.translateLiteral(message);
+    }
+    return message;
+  }
+
+  function confirmModal(options = {}) {
+    const defaultTitle = window.I18N ? I18N.t("common.confirm.title", "请确认") : "请确认";
+    const defaultConfirmText = window.I18N ? I18N.t("common.actions.confirm", "确定") : "确定";
+    const defaultCancelText = window.I18N ? I18N.t("common.actions.cancel", "取消") : "取消";
+    const message = translateMessage(options.message || "确定要继续吗？");
+    const type = normalizeType(options.type || "b");
+    const confirmText = translateMessage(options.confirmText || defaultConfirmText);
+    const cancelText = translateMessage(options.cancelText || defaultCancelText);
+
+    return new Promise((resolve) => {
+      const body = document.body || document.getElementsByTagName("body")[0];
+      if (!body) {
+        resolve(false);
+        return;
+      }
+
+      const cfg = getToastVisualConfig(type);
+      const overlay = document.createElement("div");
+      overlay.className = "warning-confirm";
+      overlay.setAttribute("role", "dialog");
+      overlay.setAttribute("aria-modal", "true");
+
+      overlay.innerHTML = `
+        <div class="warning-confirm__box">
+          <div class="warning-confirm__icon"></div>
+          <div class="warning-confirm__content">
+            <h2 class="warning-confirm__title"></h2>
+            <p class="warning-confirm__message"></p>
+            <div class="warning-confirm__actions">
+              <button type="button" class="warning-confirm__button warning-confirm__button--cancel"></button>
+              <button type="button" class="warning-confirm__button warning-confirm__button--confirm"></button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const icon = overlay.querySelector(".warning-confirm__icon");
+      const title = overlay.querySelector(".warning-confirm__title");
+      const messageEl = overlay.querySelector(".warning-confirm__message");
+      const cancelBtn = overlay.querySelector(".warning-confirm__button--cancel");
+      const confirmBtn = overlay.querySelector(".warning-confirm__button--confirm");
+
+      icon.textContent = cfg.icon;
+      icon.style.color = cfg.iconColor;
+      icon.style.borderColor = cfg.iconColor;
+      title.textContent = options.title ? translateMessage(options.title) : defaultTitle;
+      messageEl.textContent = message;
+      cancelBtn.textContent = cancelText;
+      confirmBtn.textContent = confirmText;
+      confirmBtn.dataset.confirmType = cfg.type;
+
+      let settled = false;
+      function close(result) {
+        if (settled) return;
+        settled = true;
+        overlay.classList.add("leaving");
+        document.removeEventListener("keydown", onKeyDown);
+        overlay.addEventListener("animationend", () => {
+          overlay.remove();
+          resolve(result);
+        }, { once: true });
+      }
+
+      function onKeyDown(e) {
+        if (e.key === "Escape") close(false);
+        if (e.key === "Enter") close(true);
+      }
+
+      overlay.addEventListener("mousedown", (e) => {
+        if (e.target === overlay) close(false);
+      });
+      cancelBtn.addEventListener("click", () => close(false));
+      confirmBtn.addEventListener("click", () => close(true));
+      document.addEventListener("keydown", onKeyDown);
+
+      body.appendChild(overlay);
+      requestAnimationFrame(() => overlay.classList.add("active"));
+      confirmBtn.focus();
+    });
+  }
+
   function restoreToasts() {
       const now = Date.now();
       const list = loadStoredToasts().filter(t => t.expiresAt > now);
@@ -204,7 +292,7 @@
   }
 
   window.pop_up = pop_up;
-  window.Warning = { pop_up };
+  window.Warning = { pop_up, confirm: confirmModal };
 
   function bootWarningToasts() {
     if (!document.body) {
